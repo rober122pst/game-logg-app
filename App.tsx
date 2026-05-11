@@ -1,10 +1,10 @@
+import 'global.css';
+import 'react-native-reanimated';
+
 import Login from 'auth/Login';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
-
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-
-import 'global.css';
 
 export default function App() {
   const [loadedFonts] = useFonts({
