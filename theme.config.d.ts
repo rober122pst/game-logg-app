@@ -4,9 +4,6 @@ export const themeColors = {
     'background-surface-secondary': { dark: string, light: string },
     'text-primary': { dark: string, light: string },
     'text-secondary': { dark: string, light: string },
-    mint: { dark: string, light: string },
-    raspberry: { dark: string, light: string },
-    'cocoa-brown': { dark: string, light: string },
 }
 
 declare const themeConfig: {

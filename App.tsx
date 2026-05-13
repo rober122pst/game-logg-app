@@ -1,10 +1,13 @@
 import 'global.css';
 import 'react-native-reanimated';
 
-import Login from 'auth/Login';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFonts } from 'expo-font';
-import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import Login from 'screens/auth/Login';
+import Register from 'screens/auth/Register';
+import { RootStackParamList } from 'types';
 
 export default function App() {
   const [loadedFonts] = useFonts({
@@ -18,12 +21,17 @@ export default function App() {
 
   if (!loadedFonts) return null;
 
+  const Stack = createNativeStackNavigator<RootStackParamList>();
+
   return (
-    <>
-      <SafeAreaProvider>
-        <Login />
-        <StatusBar style="auto" />
-      </SafeAreaProvider>
-    </>
+
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName='Login' screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
+          <Stack.Screen name='Login' component={Login} />
+          <Stack.Screen name='Register' component={Register} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }

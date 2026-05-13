@@ -15,7 +15,7 @@ const tailwindColors = Object.fromEntries(
 );
 
 module.exports = {
-  content: ['./App.{js,ts,tsx}', './components/**/*.{js,ts,tsx}'],
+  content: ['./App.{js,ts,tsx}', './components/**/*.{js,ts,tsx}', './screens/**/*.{js,ts,tsx}'],
 
   presets: [require('nativewind/preset')],
   theme: {
@@ -29,6 +29,9 @@ module.exports = {
         'metropolis-black': ['Metropolis-Black', 'sans-serif']
       },
       colors: {
+        raspberry: '#E0055D',
+        mint: '#72B4A9',
+        'cocoa-brown': '#E06B05',
         ...tailwindColors,
       }
     },

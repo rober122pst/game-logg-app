@@ -1,3 +1,7 @@
+import { Pressable, Text, View } from 'react-native';
+
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Logo from 'assets/logos/logo-tipo.svg';
 import BaseInterface from "components/BaseInterface";
 import { GoogleAuthButton } from 'components/GoogleAuthButton';
@@ -6,12 +10,16 @@ import { CustomButton } from "components/ui/CustomButton";
 import InputText from "components/ui/InputText";
 import { Checkbox } from 'expo-checkbox';
 import { useState } from "react";
-import { Pressable, Text, View } from 'react-native';
+import { RootStackParamList } from 'types';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
+
+    const navigation = useNavigation<NavigationProp>();
 
     return (
         <BaseInterface>
@@ -25,12 +33,12 @@ export default function Login() {
                         <InputText label="Senha" placeholder="Digite sua senha" type="password" value={password} onChangeText={setPassword} autoCorrect={false} />
                         <View className="flex-row items-center" style={{ gap: 8 }}>
                             <Checkbox value={rememberMe} onValueChange={setRememberMe} />
-                            <Text className='text-text-primary'> Lembrar de mim</Text>
+                            <Text className='text-text-primary' onPress={() => setRememberMe((prev) => !prev)}> Lembrar de mim</Text>
                         </View>
-                        <View>
+                        <View style={{ marginBottom: 16 }}>
                             <CustomButton title="Entrar" variant="cta" />
-                            <Pressable className="items-center mt-4">
-                                <Text className="font-metropolis-medium" style={{ textDecorationLine: "underline", marginTop: 8, color: "#E0055D" }}>
+                            <Pressable className="items-center">
+                                <Text className="font-metropolis-medium text-cocoa-brown" style={{ textDecorationLine: "underline", marginTop: 8 }}>
                                     Esqueci minha senha
                                 </Text>
                             </Pressable>
@@ -39,6 +47,11 @@ export default function Login() {
                         <GoogleAuthButton />
                     </View>
                 </View>
+                <Pressable onPress={() => navigation.navigate('Register')}>
+                    <Text className='text-text-primary' style={{ marginBottom: 21, textAlign: "center" }}>
+                        Não tem uma conta? <Text className="font-metropolis-medium text-cocoa-brown" style={{ textDecorationLine: "underline" }}>Registrar-se</Text>
+                    </Text>
+                </Pressable>
             </View>
         </BaseInterface>
     );
