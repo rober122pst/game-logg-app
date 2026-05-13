@@ -1,6 +1,8 @@
 import 'global.css';
 import 'react-native-reanimated';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFonts } from 'expo-font';
@@ -9,6 +11,7 @@ import Login from 'screens/auth/Login';
 import Register from 'screens/auth/Register';
 import { RootStackParamList } from 'types';
 
+const queryClient = new QueryClient();
 export default function App() {
   const [loadedFonts] = useFonts({
     'Metropolis-Regular': require('./assets/fonts/Metropolis/Metropolis-Regular.otf'),
@@ -26,12 +29,14 @@ export default function App() {
   return (
 
     <SafeAreaProvider>
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName='Login' screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
-          <Stack.Screen name='Login' component={Login} />
-          <Stack.Screen name='Register' component={Register} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <QueryClientProvider client={queryClient}>
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName='Login' screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
+            <Stack.Screen name='Login' component={Login} />
+            <Stack.Screen name='Register' component={Register} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </QueryClientProvider>
     </SafeAreaProvider>
   );
 }

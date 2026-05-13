@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -9,6 +9,7 @@ import { SteamAuthButton } from 'components/SteamAuthButton';
 import { CustomButton } from "components/ui/CustomButton";
 import InputText from "components/ui/InputText";
 import { Checkbox } from 'expo-checkbox';
+import { useLogin } from 'hooks/authHooks';
 import { useState } from "react";
 import { RootStackParamList } from 'types';
 
@@ -19,7 +20,28 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
 
+    const { mutate, isPending, isError } = useLogin();
+
     const navigation = useNavigation<NavigationProp>();
+
+    const onSubmit = () => {
+        if (!email || !password) {
+            Alert.alert(
+                'Campos inválidos',
+                'Preencha os campos corretamente.',
+                [
+                    { text: 'Entendi' }
+                ]
+            )
+            return;
+        }
+
+        const data = {
+            email,
+            password
+        }
+        mutate(data);
+    }
 
     return (
         <BaseInterface>
@@ -36,7 +58,11 @@ export default function Login() {
                             <Text className='text-text-primary' onPress={() => setRememberMe((prev) => !prev)}> Lembrar de mim</Text>
                         </View>
                         <View style={{ marginBottom: 16 }}>
-                            <CustomButton title="Entrar" variant="cta" />
+                            {isPending ? (
+                                <ActivityIndicator />
+                            ) : (
+                                <CustomButton title="Entrar" variant="cta" onPress={onSubmit} />
+                            )}
                             <Pressable className="items-center">
                                 <Text className="font-metropolis-medium text-cocoa-brown" style={{ textDecorationLine: "underline", marginTop: 8 }}>
                                     Esqueci minha senha
