@@ -1,12 +1,20 @@
+import { ScrollView } from "react-native";
+
 import BaseInterface from "components/BaseInterface";
-import { Text } from "react-native";
+import Header from "components/Header";
+import LoadingComponent from "components/LoadingComponent";
+import { useMe } from "hooks/userHooks";
 
 export default function Home() {
+    const { data, isLoading } = useMe();
+
+    if (isLoading || !data) return <LoadingComponent />
+
     return (
         <BaseInterface>
-            <Text className="text-text-primary text-4xl font-metropolis">
-                Olá, Rober
-            </Text>
+            <Header username={data.username} />
+            <ScrollView className="px-4">
+            </ScrollView>
         </BaseInterface>
     )
 }

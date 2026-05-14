@@ -5,7 +5,7 @@ import BaseInterface from "./BaseInterface";
 export default function LoadingComponent() {
     return (
         <BaseInterface>
-            <Animated.View>
+            <Animated.View className='w-full h-full items-center justify-center' style={{ opacity: 0.5 }}>
                 <Logo width={150} height={150} />
             </Animated.View>
         </BaseInterface>
