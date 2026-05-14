@@ -12,7 +12,7 @@ import { Checkbox } from 'expo-checkbox';
 import { useState } from 'react';
 import { RootStackParamList } from "types";
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
 
 export default function Register() {
     const [form, setForm] = useState({

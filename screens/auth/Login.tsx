@@ -20,7 +20,7 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
 
-    const { mutate, isPending, isError } = useLogin();
+    const { mutate, isPending, isError, error } = useLogin();
 
     const navigation = useNavigation<NavigationProp>();
 
@@ -68,6 +68,11 @@ export default function Login() {
                                     Esqueci minha senha
                                 </Text>
                             </Pressable>
+                            {isError &&
+                                <Text className='text-red-600 text-sm'>
+                                    {error.name}, {error.message}
+                                </Text>
+                            }
                         </View>
                         <SteamAuthButton />
                         <GoogleAuthButton />

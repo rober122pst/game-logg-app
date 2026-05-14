@@ -2,7 +2,7 @@ import { create } from 'axios';
 import { useAuthStore } from 'store/useAuthStore';
 
 export const api = create({
-    baseURL: 'http://localhost:1987',
+    baseURL: 'https://saddlebag-donation-decorated.ngrok-free.dev',
 });
 
 api.interceptors.request.use((config) => {

@@ -4,12 +4,9 @@ import 'react-native-reanimated';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Routes } from 'components/Routes';
 import { useFonts } from 'expo-font';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import Login from 'screens/auth/Login';
-import Register from 'screens/auth/Register';
-import { RootStackParamList } from 'types';
 
 const queryClient = new QueryClient();
 export default function App() {
@@ -24,17 +21,12 @@ export default function App() {
 
   if (!loadedFonts) return null;
 
-  const Stack = createNativeStackNavigator<RootStackParamList>();
-
   return (
 
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <NavigationContainer>
-          <Stack.Navigator initialRouteName='Login' screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
-            <Stack.Screen name='Login' component={Login} />
-            <Stack.Screen name='Register' component={Register} />
-          </Stack.Navigator>
+          <Routes />
         </NavigationContainer>
       </QueryClientProvider>
     </SafeAreaProvider>
