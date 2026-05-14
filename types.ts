@@ -36,3 +36,9 @@ export interface UserType {
     library: UserGameType[] | null;
     createdAt: string;
 }
+
+export interface MyStatsType {
+    beatedGames: number;
+    platinumGames: number;
+    totalPlaytime: number;
+}
