@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Routes } from '@/components/Routes';
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { StatusBar } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const queryClient = new QueryClient();
@@ -25,7 +25,9 @@ export default function App() {
   return (
 
     <SafeAreaProvider className='flex-1'>
-      <StatusBar barStyle='default' />
+
+      <StatusBar style='inverted' />
+
       <QueryClientProvider client={queryClient}>
         <NavigationContainer>
           <Routes />

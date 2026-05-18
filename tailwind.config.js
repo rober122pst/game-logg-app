@@ -14,7 +14,7 @@ const tailwindColors = Object.fromEntries(
   ])
 );
 
-module.exports = {
+export default {
   content: ['./App.{js,ts,tsx}', './components/**/*.{js,ts,tsx}', './screens/**/*.{js,ts,tsx}'],
 
   presets: [require('nativewind/preset')],

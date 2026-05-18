@@ -1,51 +1,118 @@
+import { RouteProp, useRoute } from "@react-navigation/native";
+import { Text, View } from "react-native";
+import Animated, { interpolate, useAnimatedRef, useAnimatedStyle, useScrollOffset } from "react-native-reanimated";
+
+import Logo from '@/assets/placeholder/avatar.jpg';
 import BaseInterface from "@/components/BaseInterface";
 import GameLoadingComponent from "@/components/GameLoadingComponent";
+import { CustomButton } from "@/components/ui/CustomButton";
 import { useGame } from "@/hooks/gameHooks";
+import tailwindConfig from '@/tailwind.config';
 import { RootStackParamList } from "@/types";
-import { RouteProp, useRoute } from "@react-navigation/native";
-import { useEffect } from "react";
-import { Image, Text, View } from "react-native";
+import { Trophy } from "lucide-react-native";
+import resolveConfig from 'tailwindcss/resolveConfig';
+
+const fullConfig = resolveConfig(tailwindConfig);
 
 export default function GameScreen() {
     const route = useRoute<RouteProp<RootStackParamList, 'Game'>>();
     const gameParams = route.params;
     const { data: game, isLoading, error } = useGame(gameParams.igdbId);
 
-    useEffect(() => {
-        console.log(game);
-    }, []);
+    const scrollRef = useAnimatedRef<Animated.ScrollView>();
+    const scrollOfset = useScrollOffset(scrollRef);
+
+    const IMG_HEIGHT = 256;
+
+    const imageAnimatedStyle = useAnimatedStyle(() => {
+        return {
+            transform: [
+                {
+                    translateY: interpolate(
+                        scrollOfset.value,
+                        [-IMG_HEIGHT, 0, IMG_HEIGHT],
+                        [-IMG_HEIGHT / 2, 0, IMG_HEIGHT * 0.5],
+                    )
+                },
+                {
+                    scale: interpolate(
+                        scrollOfset.value,
+                        [-IMG_HEIGHT, 0, IMG_HEIGHT],
+                        [2, 1, 1],
+                    )
+                }
+            ],
+        };
+    });
 
     if (isLoading || !game) return <GameLoadingComponent gameParams={gameParams} />;
 
     if (error) return <Text>Deu erro rapaz</Text>
 
+    const rating = game.ratings[0].score;
+
+    const ratingColor = (() => {
+        if (!rating) return 'text-text-primary'
+        if (rating < 30) {
+            return 'text-red-500';
+        } else if (rating < 50) {
+            return 'text-text-primary'
+        } else if (rating < 75) {
+            return 'text-mint'
+        } else if (rating < 99) {
+            return 'text-raspberry'
+        } else if (rating === 100) {
+            return 'text-cocoa-brown'
+        }
+        return 'text-text-primary';
+    })()
 
     return (
-        <BaseInterface navbar>
-            <View className="relative w-full h-64 bg-background-surface rounded-xl items-center justify-center">
-                <Image source={{ uri: game.bannerUrl }} className="w-full h-full rounded-xl" resizeMode="cover" />
-                <View className="absolute inset-0 bg-background/80 rounded-xl" />
-            </View>
-            <View className="flex-1 px-4">
-                <View>
-                    <Text className="text-text-primary text-2xl font-metropolis-bold mt-4">
-                        {game.title}
-                    </Text>
-                    <View className="gap-1">
-                        <Text className="text-text-primary text-lg font-metropolis-medium">
-                            Avaliação: {game.ratings.length > 0 ? `${game.ratings[0].score}%` : 'Sem avaliação'}
-                        </Text>
-                        <Text className="text-text-primary text-lg font-metropolis-medium">
-                            Lançamento: {game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'Data desconhecida'}
-                        </Text>
+        <>
+            <BaseInterface navbar>
+                <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
+                    <Animated.Image source={game.bannerUrl ? { uri: game.bannerUrl } : Logo} className="w-full bg-background-surface rounded-xl items-center justify-center" style={[{ height: IMG_HEIGHT }, imageAnimatedStyle]} />
+                    <View className="h-screen flex px-4 bg-background gap-4">
+                        <View>
+                            <Text className="text-text-primary text-2xl font-metropolis-bold mt-4">
+                                {game.title}
+                            </Text>
+                            <View className="gap-1">
+                                <Text className="text-text-secondary text-lg font-metropolis-medium">
+                                    Avaliação: <Text className={ratingColor}>{game.ratings.length > 0 ? `${game.ratings[0].score}%` : 'Sem avaliação'}</Text>
+                                </Text>
+                                <Text className="text-text-secondary text-lg font-metropolis-medium">
+                                    Lançamento: {game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'Data desconhecida'}
+                                </Text>
+                            </View>
+                        </View>
+                        <CustomButton title="Fazer Logg" />
+                        <View className="w-full bg-background-surface border border-background-surface-secondary rounded-lg p-4">
+                            <Text className="text-text-secondary text-sm font-metropolis-semi-bold mb-4 uppercase tracking-widest">Seu Registro</Text>
+                            <View className="flex-row items-center gap-3">
+                                <View className="w-1/3 gap-2 border-r border-background-surface-secondary">
+                                    <Text className="font-metropolis-light text-xs text-text-secondary">STATUS</Text>
+                                    <Text className="text-text-primary font-metropolis-semi-bold">
+                                        <Trophy color={fullConfig.theme.colors["cocoa-brown"]} size={12} /> Platinado
+                                    </Text>
+                                </View>
+                                <View className="w-1/3 gap-2 border-r border-background-surface-secondary">
+                                    <Text className="font-metropolis-light text-xs text-text-secondary">TEMPO</Text>
+                                    <Text className="text-text-primary font-metropolis-semi-bold">
+                                        76h
+                                    </Text>
+                                </View>
+                                <View className="w-1/3 gap-2">
+                                    <Text className="font-metropolis-light text-xs text-text-secondary">NOTA</Text>
+                                    <Text className="text-text-primary font-metropolis-black">
+                                        8
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
                     </View>
-                </View>
-                <View className="mt-4">
-                    <Text className="text-text-primary text-base font-metropolis-regular">
-                        {game.description || 'Sem descrição disponível.'}
-                    </Text>
-                </View>
-            </View>
-        </BaseInterface>
+                </Animated.ScrollView>
+            </BaseInterface>
+        </>
     )
 }
