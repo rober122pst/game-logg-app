@@ -1,7 +1,7 @@
+import { api } from "@/services/api";
+import { useAuthStore } from "@/store/useAuthStore";
 import { useMutation } from '@tanstack/react-query';
 import { Alert } from 'react-native';
-import { api } from "services/api";
-import { useAuthStore } from "store/useAuthStore";
 
 export function useRegister() {
     const setToken = useAuthStore((s) => s.setToken);

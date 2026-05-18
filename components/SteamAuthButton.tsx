@@ -1,5 +1,5 @@
+import SteamLogo from '@/assets/Steam_Symbol_1.png';
 import { Image, Pressable, Text } from "react-native";
-import SteamLogo from '../assets/Steam_Symbol_1.png';
 
 export function SteamAuthButton() {
     return (

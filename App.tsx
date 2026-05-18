@@ -1,10 +1,10 @@
-import 'global.css';
 import 'react-native-reanimated';
+import './global.css';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+import { Routes } from '@/components/Routes';
 import { NavigationContainer } from '@react-navigation/native';
-import { Routes } from 'components/Routes';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';

@@ -1,7 +1,7 @@
+import AppStack from "@/screens/app/AppStack";
+import AuthStack from "@/screens/auth/AuthStack";
+import { useAuthStore } from "@/store/useAuthStore";
 import { useEffect, useState } from 'react';
-import AppStack from "screens/app/AppStack";
-import AuthStack from "screens/auth/AuthStack";
-import { useAuthStore } from "store/useAuthStore";
 import LoadingComponent from "./LoadingComponent";
 
 export function Routes() {

@@ -1,5 +1,5 @@
+import { RootStackParamList } from "@/types";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { RootStackParamList } from "types";
 import Login from "./Login";
 import Register from "./Register";
 

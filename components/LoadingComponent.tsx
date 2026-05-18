@@ -1,4 +1,4 @@
-import Logo from 'assets/logos/logo-tipo.svg';
+import Logo from '@/assets/logos/logo-tipo.svg';
 import { Animated } from "react-native";
 import BaseInterface from "./BaseInterface";
 

@@ -1,5 +1,5 @@
+import GoogleLogo from '@/assets/google-icon.png';
 import { Image, Pressable, Text } from "react-native";
-import GoogleLogo from '../assets/google-icon.png';
 
 export function GoogleAuthButton() {
     return (

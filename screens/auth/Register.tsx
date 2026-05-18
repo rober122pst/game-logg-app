@@ -1,16 +1,16 @@
 import { Alert, Pressable, Text, View } from "react-native";
 
+import Logo from '@/assets/logos/logo-tipo.svg';
+import BaseInterface from "@/components/BaseInterface";
+import { GoogleAuthButton } from '@/components/GoogleAuthButton';
+import { SteamAuthButton } from '@/components/SteamAuthButton';
+import { CustomButton } from "@/components/ui/CustomButton";
+import InputText from "@/components/ui/InputText";
+import { RootStackParamList } from "@/types";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Logo from 'assets/logos/logo-tipo.svg';
-import BaseInterface from "components/BaseInterface";
-import { GoogleAuthButton } from 'components/GoogleAuthButton';
-import { SteamAuthButton } from 'components/SteamAuthButton';
-import { CustomButton } from "components/ui/CustomButton";
-import InputText from "components/ui/InputText";
 import { Checkbox } from 'expo-checkbox';
 import { useState } from 'react';
-import { RootStackParamList } from "types";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
 

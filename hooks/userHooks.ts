@@ -1,9 +1,9 @@
-import { MyStatsType, UserType } from "types";
+import { MyStatsType, UserType } from "@/types";
 
+import { api } from "@/services/api";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useUserStore } from "@/store/useUserStore";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "services/api";
-import { useAuthStore } from "store/useAuthStore";
-import { useUserStore } from "store/useUserStore";
 
 export function useMe() {
     const token = useAuthStore((s) => s.token);

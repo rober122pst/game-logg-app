@@ -1,9 +1,11 @@
-import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Navbar } from "./Navbar";
 
-export default function BaseInterface({ children }: { children?: React.ReactNode }) {
+export default function BaseInterface({ children, navbar }: { children?: React.ReactNode; navbar?: boolean }) {
     return (
-        <View className="bg-background flex-1 text-text-primary p-4">
+        <SafeAreaView className="bg-background flex-1 text-text-primary px-4 py">
             {children}
-        </View>
+            {navbar && <Navbar />}
+        </SafeAreaView>
     )
 }

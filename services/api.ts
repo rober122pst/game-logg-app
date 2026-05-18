@@ -1,5 +1,5 @@
+import { useAuthStore } from '@/store/useAuthStore';
 import { create } from 'axios';
-import { useAuthStore } from 'store/useAuthStore';
 
 export const api = create({
     baseURL: 'https://saddlebag-donation-decorated.ngrok-free.dev',

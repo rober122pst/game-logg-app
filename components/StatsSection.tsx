@@ -1,7 +1,7 @@
 import { Clock, Gamepad2, LucideProps, Trophy } from "lucide-react-native";
 import { Text, View } from "react-native";
 
-import { useMyStats } from "hooks/userHooks";
+import { useMyStats } from "@/hooks/userHooks";
 
 export default function StatsSection() {
     const { data, isLoading } = useMyStats();
