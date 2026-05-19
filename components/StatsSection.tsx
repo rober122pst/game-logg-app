@@ -2,6 +2,7 @@ import { Clock, Gamepad2, LucideProps, Trophy } from "lucide-react-native";
 import { Text, View } from "react-native";
 
 import { useMyStats } from "@/hooks/userHooks";
+import { SectionTitle } from "./ui/SectionTitle";
 
 export default function StatsSection() {
     const { data, isLoading } = useMyStats();
@@ -34,7 +35,7 @@ export default function StatsSection() {
     const Card = ({ title, value, icon, color }: StatCard) => {
         const Icon = icon;
         return (
-            <View className="bg-background-surface-dark flex-1 p-4 rounded-md items-center">
+            <View className="bg-background-surface-dark flex-1 p-4 rounded-md items-center border border-background-surface-secondary">
                 <Icon className="text-raspberry" color={color} />
                 <Text className="text-text-primary text-center text-lg font-metropolis-semi-bold mt-2">
                     {value}
@@ -48,9 +49,9 @@ export default function StatsSection() {
 
     return (
         <View className="flex-1">
-            <Text className="text-text-secondary text-xl font-metropolis-semi-bold mb-4 uppercase tracking-widest">
-                Seu Progresso
-            </Text>
+            <SectionTitle>
+                SEU PROGRESSO
+            </SectionTitle>
             <View className="flex-row flex-3 mt-4 gap-4">
                 {cards.map((card, index) => (
                     <Card key={index} title={card.title} value={card.value} icon={card.icon} color={card.color} />

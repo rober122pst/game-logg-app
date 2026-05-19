@@ -11,3 +11,13 @@ export function useGame(igdbId: number) {
         },
     })
 }
+
+export function useGames(take: number) {
+    return useQuery({
+        queryKey: ['games-generical'],
+        queryFn: async () => {
+            const res = await api.get<GameType[]>(`/games?take=${take}`);
+            return res.data;
+        },
+    });
+}

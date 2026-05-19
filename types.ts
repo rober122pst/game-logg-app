@@ -36,6 +36,8 @@ export interface GameType {
     id: string
     slug: string
     title: string
+    igdbId: number
+    steamId?: string | null
     alternativeTitles?: string[]
     platformIds?: string[]
     releaseDate?: Date | string | null
