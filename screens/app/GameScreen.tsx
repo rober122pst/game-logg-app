@@ -1,10 +1,11 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { Text, View } from "react-native";
+import { FlatList, Text, View } from "react-native";
 import Animated, { interpolate, useAnimatedRef, useAnimatedStyle, useScrollOffset } from "react-native-reanimated";
 
 import Logo from '@/assets/placeholder/avatar.jpg';
 import BaseInterface from "@/components/BaseInterface";
 import GameLoadingComponent from "@/components/GameLoadingComponent";
+import ScreenshotPhotos from "@/components/ScreenshotPhotos";
 import { CustomButton } from "@/components/ui/CustomButton";
 import { useGame } from "@/hooks/gameHooks";
 import tailwindConfig from '@/tailwind.config';
@@ -70,9 +71,9 @@ export default function GameScreen() {
     return (
         <>
             <BaseInterface navbar>
-                <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
-                    <Animated.Image source={game.bannerUrl ? { uri: game.bannerUrl } : Logo} className="w-full bg-background-surface rounded-xl items-center justify-center" style={[{ height: IMG_HEIGHT }, imageAnimatedStyle]} />
-                    <View className="h-screen flex px-4 bg-background gap-4">
+                <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16} showsVerticalScrollIndicator={false} >
+                    <Animated.Image source={game.bannerUrl ? { uri: game.bannerUrl } : Logo} className="rounded-xl" style={[{ height: IMG_HEIGHT }, imageAnimatedStyle]} />
+                    <View className="flex px-4 pb-8 bg-background gap-4">
                         <View>
                             <Text className="text-text-primary text-2xl font-metropolis-bold mt-4">
                                 {game.title}
@@ -110,6 +111,24 @@ export default function GameScreen() {
                                 </View>
                             </View>
                         </View>
+                        <View>
+                            <Text className="text-text-secondary text-lg font-metropolis-semi-bold mb-1 uppercase tracking-widest">
+                                Sobre o jogo
+                            </Text>
+                            <Text className="font-metropolis text-text-primary text-base">
+                                {game.description || 'Sem descrição'}
+                            </Text>
+                        </View>
+                        <FlatList
+                            className="rounded-lg"
+                            data={game.screenshots}
+                            renderItem={({ item }) => <ScreenshotPhotos uri={item} />}
+                            keyExtractor={(item) => item}
+                            contentContainerStyle={{
+                                gap: 16
+                            }}
+                            horizontal
+                        />
                     </View>
                 </Animated.ScrollView>
             </BaseInterface>
