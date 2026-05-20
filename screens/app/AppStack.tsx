@@ -1,5 +1,7 @@
+import GameRegisterHeader from "@/components/GameRegisterHeader";
 import { RootStackParamList } from "@/types";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import EventRegisterScreen from "./EventRegisterScreen";
 import GameScreen from "./GameScreen";
 import Home from "./Home";
 import SearchScreen from "./Search";
@@ -12,6 +14,7 @@ export default function AppStack() {
             <Stack.Screen name="Home" component={Home} />
             <Stack.Screen name="Search" component={SearchScreen} />
             <Stack.Screen name="Game" component={GameScreen} />
+            <Stack.Screen name="UserGameRegister" component={EventRegisterScreen} options={{ headerShown: true, header: () => (<GameRegisterHeader />) }} />
         </Stack.Navigator>
     );
 }

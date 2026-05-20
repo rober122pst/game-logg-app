@@ -8,20 +8,22 @@ import GameLoadingComponent from "@/components/GameLoadingComponent";
 import ScreenshotPhotos from "@/components/ScreenshotPhotos";
 import { CustomButton } from "@/components/ui/CustomButton";
 import { useGame } from "@/hooks/gameHooks";
-import tailwindConfig from '@/tailwind.config';
+import { useNavigationCustom } from "@/hooks/useNavigationCustom";
+import { useTailwindColors } from "@/hooks/useTailwindColors";
 import { RootStackParamList } from "@/types";
 import { Trophy } from "lucide-react-native";
-import resolveConfig from 'tailwindcss/resolveConfig';
-
-const fullConfig = resolveConfig(tailwindConfig);
 
 export default function GameScreen() {
     const route = useRoute<RouteProp<RootStackParamList, 'Game'>>();
     const gameParams = route.params;
     const { data: game, isLoading, error } = useGame(gameParams.igdbId);
 
+    const tailwindColors = useTailwindColors();
+
     const scrollRef = useAnimatedRef<Animated.ScrollView>();
     const scrollOfset = useScrollOffset(scrollRef);
+
+    const navigation = useNavigationCustom('Game');
 
     const IMG_HEIGHT = 256;
 
@@ -87,14 +89,14 @@ export default function GameScreen() {
                                 </Text>
                             </View>
                         </View>
-                        <CustomButton title="Fazer Logg" />
+                        <CustomButton title="Fazer Logg" onPress={() => navigation.navigate('UserGameRegister', { game })} />
                         <View className="w-full bg-background-surface border border-background-surface-secondary rounded-lg p-4">
                             <Text className="text-text-secondary text-sm font-metropolis-semi-bold mb-4 uppercase tracking-widest">Seu Registro</Text>
                             <View className="flex-row items-center gap-3">
                                 <View className="w-1/3 gap-2 border-r border-background-surface-secondary">
                                     <Text className="font-metropolis-light text-xs text-text-secondary">STATUS</Text>
                                     <Text className="text-text-primary font-metropolis-semi-bold">
-                                        <Trophy color={fullConfig.theme.colors["cocoa-brown"]} size={12} /> Platinado
+                                        <Trophy color={tailwindColors["cocoa-brown"]} size={12} /> Platinado
                                     </Text>
                                 </View>
                                 <View className="w-1/3 gap-2 border-r border-background-surface-secondary">

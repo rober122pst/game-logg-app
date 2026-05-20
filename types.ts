@@ -6,6 +6,7 @@ export type RootStackParamList = {
     Search: undefined;
     Profile: undefined;
     Game: { igdbId: number, title: string, coverUrl: string, slug: string };
+    UserGameRegister: { game: GameType }
 }
 
 export interface ProfileType {

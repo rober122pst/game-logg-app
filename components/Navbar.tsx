@@ -1,9 +1,10 @@
+import { HomeIcon, Search, User } from "lucide-react-native";
+import { Pressable, View } from "react-native";
+
 import { useRouteStore } from "@/store/useRouteStore";
 import { RootStackParamList } from "@/types";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { HomeIcon, Search, User } from "lucide-react-native";
-import { Pressable, View } from "react-native";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 

@@ -3,7 +3,6 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "./Login";
 import Register from "./Register";
 
-
 export default function AuthStack() {
     const Stack = createNativeStackNavigator<RootStackParamList>();
 

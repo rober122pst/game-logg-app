@@ -9,11 +9,12 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
 import { useGames } from "@/hooks/gameHooks";
 import { useMe } from "@/hooks/userHooks";
 import { useRouteStore } from "@/store/useRouteStore";
+import { Flame } from "lucide-react-native";
 import { useEffect } from "react";
 
 export default function Home() {
     const { data, isLoading } = useMe();
-    const { data: games, isLoading: gamesLoading } = useGames(5);
+    const { data: games } = useGames(5);
     const setCurrentRoute = useRouteStore((s) => s.setCurrentRoute);
 
     useEffect(() => {
@@ -28,8 +29,8 @@ export default function Home() {
             <ScrollView className="flex-1 gap-8 px-4 py-8">
                 <StatsSection />
                 <View className="mt-8">
-                    <SectionTitle>
-                        jogos populares
+                    <SectionTitle variant="header" Icon={Flame}>
+                        Em destaque
                     </SectionTitle>
                     <FlatList
                         className="rounded-lg"
