@@ -14,7 +14,7 @@ export default function AppStack() {
             <Stack.Screen name="Home" component={Home} />
             <Stack.Screen name="Search" component={SearchScreen} />
             <Stack.Screen name="Game" component={GameScreen} />
-            <Stack.Screen name="UserGameRegister" component={EventRegisterScreen} options={{ headerShown: true, header: () => (<GameRegisterHeader />) }} />
+            <Stack.Screen name="UserGameRegister" component={EventRegisterScreen} options={({ route }) => ({ headerShown: true, header: () => (<GameRegisterHeader gameTitle={route.params.game.title} />) })} />
         </Stack.Navigator>
     );
 }

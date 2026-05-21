@@ -19,9 +19,11 @@ export interface ProfileType {
     userId: string | null
 }
 
+export type StatusEnum = "PLAYING" | "BEATED" | "PLATINUM" | "COMPLETED" | "WISHLIST" | "DROPPED"
+
 export interface UserGameType {
     id: string | null
-    status: "PLAYING" | "PLATINUM" | "COMPLETED" | "WISHLIST" | "DROPPED" | null
+    status: StatusEnum | null
     playtime: number | null
     comment: string | null
     favorite: boolean | null
@@ -33,6 +35,16 @@ export interface UserGameType {
     updateAt: Date | null
 }
 
+export interface PlatformType {
+    id: string;
+    slug: string;
+    name: string;
+    icon?: string;
+    gameId: string[];
+    games: GameType[];
+    userGame: UserGameType[];
+}
+
 export interface GameType {
     id: string
     slug: string
@@ -41,6 +53,7 @@ export interface GameType {
     steamId?: string | null
     alternativeTitles?: string[]
     platformIds?: string[]
+    platforms: PlatformType[]
     releaseDate?: Date | string | null
     genreIds?: string[]
     coverUrl?: string | null
