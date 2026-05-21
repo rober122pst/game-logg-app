@@ -9,7 +9,7 @@ type RadioInputProps = {
 
 export default function RadioInput({ selected, onPress, children }: RadioInputProps) {
     return (
-        <Pressable className={`py-4 px-4 flex-1 rounded-lg ${selected ? 'bg-raspberry/15 border border-raspberry' : 'bg-background-surface-secondary border border-background-surface-secondary'}`} onPress={onPress}>
+        <Pressable className={`py-4 px-2 flex-1 rounded-lg ${selected ? 'bg-raspberry/15 border border-raspberry' : 'bg-background-surface-secondary border border-background-surface-secondary'}`} onPress={onPress}>
             {children}
         </Pressable>
     );
