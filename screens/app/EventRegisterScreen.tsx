@@ -9,74 +9,45 @@ import PickerScreen from "@/components/ui/PickerScreen";
 import RadioInput from "@/components/ui/RadioInput";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { useTailwindColors } from "@/hooks/useTailwindColors";
-import { useState } from "react";
+import { initializeState as eventInitialState, reducer as eventReducer } from "@/reducers/gameEventReducer";
+import { initializeState as registerInitialState, reducer as registerReducer } from "@/reducers/gameRegisterReducer";
+import { useEffect, useReducer, useState } from "react";
 import { LayoutChangeEvent } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
-function DatePrecisionInputs({ datePrecision, onChange }: { datePrecision: 'Hora' | 'Dia' | 'Mês' | 'Ano', onChange: (value: string | Date) => void }) {
-    const [date, setDate] = useState('');
-
-    const handleChange = (value: string) => {
-        if (datePrecision === 'Ano') {
-            const numericValue = value.replace(/[^0-9]/g, '');
-            setDate(numericValue);
-            onChange(numericValue);
-        }
-    }
+function DatePrecisionInputs({ datePrecision, onChange, value }: { datePrecision: 'Hora' | 'Dia' | 'Mês' | 'Ano', onChange: (value: string) => void, value: string }) {
+    let placeholder = ''
+    let maxLength = 4
 
     switch (datePrecision) {
         case 'Ano':
-            return (
-                <View className="mt-4">
-                    <Text className="text-text-secondary font-metropolis mb-2">Ano</Text>
-                    <TextInput className="flex-1 p-4 bg-background-surface-secondary rounded-lg text-text-primary" placeholderTextColor="#787878" value={date} maxLength={4} keyboardType="numeric" placeholder="XXXX" onChangeText={handleChange} />
-                </View>
-            );
+            placeholder = 'AAAA';
+            maxLength = 4;
+            break;
+        case 'Mês':
+            placeholder = 'MM/AAAA';
+            maxLength = 7;
+            break;
+        case 'Dia':
+        case 'Hora':
+            placeholder = 'DD/MM/AAAA';
+            maxLength = 10;
     }
+
+    return (
+        <View className="mt-4">
+            <Text className="text-text-secondary font-metropolis mb-2">Data</Text>
+            <TextInput className="flex-1 p-4 bg-background-surface-secondary rounded-lg text-text-primary" placeholderTextColor="#787878" value={value} maxLength={maxLength} keyboardType="numeric" placeholder={placeholder} onChangeText={onChange} />
+        </View>
+    );
 }
 
 export default function EventRegisterScreen() {
-    const [form, setForm] = useState<{
-        status: 'PLAYING' | 'BEATED' | 'PLATINUM' | 'COMPLETED' | 'WISHLIST' | 'DROPPED';
-        acquiredAt: Date | string;
-        playtime: string | number;
-        favorite: boolean;
-        difficulty: 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
-        precisionDate: 'Hora' | 'Dia' | 'Mês' | 'Ano';
-        date: Date | string;
-        rating: { story: number; graphics: number; sounds: number; gameplay: number };
-        comment: string;
-    }>
-        ({
-            status: 'PLAYING',
-            acquiredAt: '',
-            playtime: '',
-            favorite: false,
-            difficulty: 'D',
-            precisionDate: 'Ano',
-            date: '',
-            rating: { story: 5, graphics: 5, sounds: 5, gameplay: 5 },
-            comment: ''
-        });
-
     const route = useRoute<RouteProp<RootStackParamList, 'UserGameRegister'>>();
     const { game } = route.params;
-    const [platform, setPlatform] = useState(game.platforms[0].name);
+    const [registerForm, registerDispatch] = useReducer(registerReducer, registerInitialState);
+    const [eventForm, eventDispatch] = useReducer(eventReducer, eventInitialState);
     const [showPicker, setShowPicker] = useState(false);
-
-    const updateField = (field: keyof typeof form, value: number | string | Date | boolean) => {
-        setForm(prev => ({ ...prev, [field]: value }))
-    }
-
-    const updateRating = (key: keyof typeof form.rating, value: number | string) => {
-        setForm(prev => ({
-            ...prev,
-            rating: {
-                ...prev.rating,
-                [key]: Number(value)
-            }
-        }))
-    }
 
     const tailwindColors = useTailwindColors();
 
@@ -119,12 +90,16 @@ export default function EventRegisterScreen() {
         }
     ]
 
+    useEffect(() => {
+        registerDispatch({ type: 'SET_PLATFORM', value: game.platforms[0].name });
+    }, []);
+
     const StatusOption = (item: statusOptionsType) => {
         const Icon = item.icon;
-        const selected = form.status === item.type;
+        const selected = registerForm.status === item.type;
 
         return (
-            <RadioInput selected={selected} onPress={() => updateField('status', item.type)}>
+            <RadioInput selected={selected} onPress={() => registerDispatch({ type: 'SET_STATUS', value: item.type })}>
                 <View className="flex-row items-center gap-2 px-2">
                     <Icon size={20} color={selected ? tailwindColors.raspberry : '#787878'} />
                     <Text className="text-text-primary font-metropolis">{item.label}</Text>
@@ -141,8 +116,8 @@ export default function EventRegisterScreen() {
     return (
         <View className="flex-1 bg-background-surface">
             <KeyboardProvider>
-                <KeyboardAwareScrollView className="px-12" style={{ paddingBottom: footerHeight + 16 }} enableOnAndroid={true} keyboardShouldPersistTaps="handled">
-                    <View className="border-b border-background-surface-secondary pb-10 flex-1">
+                <KeyboardAwareScrollView className="px-12 mt-6" extraScrollHeight={footerHeight + 67} enableOnAndroid={true} keyboardShouldPersistTaps="handled">
+                    <View className="border-b border-background-surface-secondary pb-10">
                         <View className="mb-4">
                             <SectionTitle>
                                 Status do Jogo
@@ -160,20 +135,20 @@ export default function EventRegisterScreen() {
                                 scrollEnabled={false}
                             />
                         </View>
-                        {form.status !== 'WISHLIST' &&
+                        {registerForm.status !== 'WISHLIST' &&
                             <View className="flex-row gap-4">
                                 <View className="flex-1">
                                     <Text className="text-text-secondary font-metropolis mb-2">Plataforma</Text>
-                                    <Pressable className="flex-1 p-4 bg-background-surface-secondary rounded-lg" onPress={() => setShowPicker(true)}>
+                                    <Pressable className="p-4 bg-background-surface-secondary rounded-lg" onPress={() => setShowPicker(true)}>
                                         <Text className="text-text-primary font-metropolis">
-                                            {platform}
+                                            {registerForm.platform}
                                         </Text>
                                     </Pressable>
                                 </View>
                             </View>
                         }
                     </View>
-                    {form.status !== 'PLAYING' && form.status !== 'DROPPED' && form.status !== 'WISHLIST' &&
+                    {registerForm.status !== 'PLAYING' && registerForm.status !== 'DROPPED' && registerForm.status !== 'WISHLIST' &&
                         <View className="mt-6">
                             <SectionTitle>
                                 Informações do Evento
@@ -183,21 +158,24 @@ export default function EventRegisterScreen() {
                                     Precisão de Data do Evento
                                 </Text>
                                 <View className="flex-row items-center gap-4">
-                                    {['Hora', 'Dia', 'Mês', 'Ano'].map((option) => (
-                                        <RadioInput key={option} selected={form.precisionDate === option} onPress={() => updateField('precisionDate', option)}>
+                                    {(['Hora', 'Dia', 'Mês', 'Ano'] as const).map((option) => (
+                                        <RadioInput key={option} selected={eventForm.precision === option} onPress={() => eventDispatch({ type: 'SET_PRECISION', value: option })}>
                                             <Text className="text-text-primary font-metropolis text-center">{option}</Text>
                                         </RadioInput>
                                     ))}
                                 </View>
-                                <DatePrecisionInputs datePrecision={form.precisionDate} onChange={(value) => updateField('date', value)} />
+                                <DatePrecisionInputs datePrecision={eventForm.precision} onChange={(value) => eventDispatch({ type: 'SET_DATE', value })} value={eventForm.date} />
                             </View>
+                            {eventForm.error &&
+                                <Text className="font-metropolis text-red-500">{eventForm.error}</Text>
+                            }
                             <View>
                                 <Text className="text-text-secondary font-metropolis mb-2">
                                     Dificuldade
                                 </Text>
                                 <View className="flex-row items-center gap-4">
-                                    {['D', 'C', 'B', 'A', 'S', 'SS'].map((diff) => (
-                                        <RadioInput key={diff} selected={form.difficulty === diff} onPress={() => updateField('difficulty', diff)}>
+                                    {(['D', 'C', 'B', 'A', 'S', 'SS'] as const).map((diff) => (
+                                        <RadioInput key={diff} selected={eventForm.difficulty === diff} onPress={() => eventDispatch({ type: 'SET_DIFFICULTY', value: diff })}>
                                             <Text className="text-text-primary font-metropolis text-center">{diff === 'SS' ? 'S+' : diff}</Text>
                                         </RadioInput>
                                     ))}
@@ -210,7 +188,7 @@ export default function EventRegisterScreen() {
                     <CustomButton title="Loggar Jogo" />
                 </KeyboardStickyView>
                 {showPicker &&
-                    <PickerScreen items={game.platforms} onSelect={(name) => setPlatform(name)} onDestroy={() => setShowPicker(false)} />
+                    <PickerScreen items={game.platforms} onSelect={(name) => registerDispatch({ type: 'SET_PLATFORM', value: name })} onDestroy={() => setShowPicker(false)} />
                 }
             </KeyboardProvider>
         </View>
