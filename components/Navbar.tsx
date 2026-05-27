@@ -1,9 +1,9 @@
-import { HomeIcon, Search, User } from "lucide-react-native";
-import { Pressable, View } from "react-native";
+import { HomeIcon, Search, User } from 'lucide-react-native';
+import { Pressable, View } from 'react-native';
 
-import { useRouteStore } from "@/store/useRouteStore";
-import { RootStackParamList } from "@/types";
-import { useNavigation } from "@react-navigation/native";
+import { useRouteStore } from '@/store/useRouteStore';
+import { RootStackParamList } from '@/types';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -13,10 +13,16 @@ export function Navbar() {
     const navigation = useNavigation<NavigationProp>();
 
     return (
-        <View className="h-20 bg-background-surface border-t border-l border-r border-background-surface rounded-t-2xl flex-row items-center justify-around">
-            <Pressable onPress={() => navigation.navigate('Home')}><HomeIcon color={activeRoute === 'home' ? '#E0055D' : '#D9D9D9'} /></Pressable>
-            <Pressable onPress={() => navigation.navigate('Search')}><Search color={activeRoute === 'search' ? '#E0055D' : '#D9D9D9'} /></Pressable>
-            <Pressable onPress={() => navigation.navigate('Profile')}><User color={activeRoute === 'profile' ? '#E0055D' : '#D9D9D9'} /></Pressable>
+        <View className="h-20 flex-row items-center justify-around rounded-t-2xl border-l border-r border-t border-background-surface bg-background-surface">
+            <Pressable onPress={() => navigation.navigate('Home')}>
+                <HomeIcon color={activeRoute === 'home' ? '#E0055D' : '#D9D9D9'} />
+            </Pressable>
+            <Pressable onPress={() => navigation.navigate('Search')}>
+                <Search color={activeRoute === 'search' ? '#E0055D' : '#D9D9D9'} />
+            </Pressable>
+            <Pressable onPress={() => navigation.navigate('Profile')}>
+                <User color={activeRoute === 'profile' ? '#E0055D' : '#D9D9D9'} />
+            </Pressable>
         </View>
     );
 }

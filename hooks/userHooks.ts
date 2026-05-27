@@ -1,9 +1,9 @@
-import { MyStatsType, UserType } from "@/types";
+import { MyStatsType, UserType } from '@/types';
 
-import { api } from "@/services/api";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useUserStore } from "@/store/useUserStore";
-import { useQuery } from "@tanstack/react-query";
+import { api } from '@/services/api';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useUserStore } from '@/store/useUserStore';
+import { useQuery } from '@tanstack/react-query';
 
 export function useMe() {
     const token = useAuthStore((s) => s.token);
@@ -12,13 +12,13 @@ export function useMe() {
     return useQuery({
         queryKey: ['me'],
         queryFn: async () => {
-            const res = await api.get<UserType>('/users/me')
+            const res = await api.get<UserType>('/users/me');
             const user = res.data;
             setUser(user);
             return user;
         },
         enabled: !!token,
-    })
+    });
 }
 
 export function useMyStats() {
@@ -28,9 +28,9 @@ export function useMyStats() {
     return useQuery({
         queryKey: ['my-stats'],
         queryFn: async () => {
-            const res = await api.get<MyStatsType>(`/users/${user?.id}/stats`)
+            const res = await api.get<MyStatsType>(`/users/${user?.id}/stats`);
             return res.data;
         },
         enabled: !!user || !!token,
-    })
+    });
 }

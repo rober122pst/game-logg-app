@@ -1,16 +1,16 @@
-import { FlatList, ScrollView, View } from "react-native";
+import { FlatList, ScrollView, View } from 'react-native';
 
-import BaseInterface from "@/components/BaseInterface";
-import GameCover from "@/components/GamesCover";
-import Header from "@/components/Header";
-import LoadingComponent from "@/components/LoadingComponent";
-import StatsSection from "@/components/StatsSection";
-import { SectionTitle } from "@/components/ui/SectionTitle";
-import { useGames } from "@/hooks/gameHooks";
-import { useMe } from "@/hooks/userHooks";
-import { useRouteStore } from "@/store/useRouteStore";
-import { Flame } from "lucide-react-native";
-import { useEffect } from "react";
+import BaseInterface from '@/components/BaseInterface';
+import GameCover from '@/components/GamesCover';
+import Header from '@/components/Header';
+import LoadingComponent from '@/components/LoadingComponent';
+import StatsSection from '@/components/StatsSection';
+import { SectionTitle } from '@/components/ui/SectionTitle';
+import { useGames } from '@/hooks/gameHooks';
+import { useMe } from '@/hooks/userHooks';
+import { useRouteStore } from '@/store/useRouteStore';
+import { Flame } from 'lucide-react-native';
+import { useEffect } from 'react';
 
 export default function Home() {
     const { data, isLoading } = useMe();
@@ -21,7 +21,7 @@ export default function Home() {
         setCurrentRoute('home');
     }, [setCurrentRoute]);
 
-    if (isLoading || !data) return <LoadingComponent />
+    if (isLoading || !data) return <LoadingComponent />;
 
     return (
         <BaseInterface navbar>
@@ -44,5 +44,5 @@ export default function Home() {
                 </View>
             </ScrollView>
         </BaseInterface>
-    )
+    );
 }

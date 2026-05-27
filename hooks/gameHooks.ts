@@ -1,6 +1,6 @@
-import { api } from "@/services/api";
-import { GameType } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import { api } from '@/services/api';
+import { GameType } from '@/types';
+import { useQuery } from '@tanstack/react-query';
 
 export function useGame(igdbId: number) {
     return useQuery({
@@ -9,7 +9,7 @@ export function useGame(igdbId: number) {
             const res = await api.get<{ game: GameType }>(`/games/${igdbId}`);
             return res.data.game;
         },
-    })
+    });
 }
 
 export function useGames(take: number) {

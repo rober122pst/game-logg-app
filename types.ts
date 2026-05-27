@@ -5,34 +5,34 @@ export type RootStackParamList = {
     Home: undefined;
     Search: undefined;
     Profile: undefined;
-    Game: { igdbId: number, title: string, coverUrl: string, slug: string };
-    UserGameRegister: { game: GameType }
-}
+    Game: { igdbId: number; title: string; coverUrl: string; slug: string };
+    UserGameRegister: { game: GameType };
+};
 
 export interface ProfileType {
-    id: string | null
-    displayName: string | null
-    bio: string | null
-    avatar: string | null
-    banner: string | null
-    isPublic: boolean | null
-    userId: string | null
+    id: string | null;
+    displayName: string | null;
+    bio: string | null;
+    avatar: string | null;
+    banner: string | null;
+    isPublic: boolean | null;
+    userId: string | null;
 }
 
-export type StatusEnum = "PLAYING" | "BEATED" | "PLATINUM" | "COMPLETED" | "WISHLIST" | "DROPPED"
+export type StatusEnum = 'PLAYING' | 'BEATED' | 'PLATINUM' | 'COMPLETED' | 'WISHLIST' | 'DROPPED';
 
 export interface UserGameType {
-    id: string | null
-    status: StatusEnum | null
-    playtime: number | null
-    comment: string | null
-    favorite: boolean | null
-    difficulty: "D" | "S" | "C" | "B" | "A" | "SS" | null
-    acquiredAt: Date | null
-    gameId: string | null
-    userId: string | null
-    createdAt: Date | null
-    updateAt: Date | null
+    id: string | null;
+    status: StatusEnum | null;
+    playtime: number | null;
+    comment: string | null;
+    favorite: boolean | null;
+    difficulty: 'D' | 'S' | 'C' | 'B' | 'A' | 'SS' | null;
+    acquiredAt: Date | null;
+    gameId: string | null;
+    userId: string | null;
+    createdAt: Date | null;
+    updateAt: Date | null;
 }
 
 export interface PlatformType {
@@ -46,23 +46,22 @@ export interface PlatformType {
 }
 
 export interface GameType {
-    id: string
-    slug: string
-    title: string
-    igdbId: number
-    steamId?: string | null
-    alternativeTitles?: string[]
-    platformIds?: string[]
-    platforms: PlatformType[]
-    releaseDate?: Date | string | null
-    genreIds?: string[]
-    coverUrl?: string | null
-    bannerUrl?: string | null
-    screenshots?: string[]
-    description?: string | null
-    preferedSource?: string | null
-    ratings: { iconUrl?: string | null, link: string, score: number, name: 'IGDB' | 'IGN' }[] | [],
-
+    id: string;
+    slug: string;
+    title: string;
+    igdbId: number;
+    steamId?: string | null;
+    alternativeTitles?: string[];
+    platformIds?: string[];
+    platforms: PlatformType[];
+    releaseDate?: Date | string | null;
+    genreIds?: string[];
+    coverUrl?: string | null;
+    bannerUrl?: string | null;
+    screenshots?: string[];
+    description?: string | null;
+    preferedSource?: string | null;
+    ratings: { iconUrl?: string | null; link: string; score: number; name: 'IGDB' | 'IGN' }[] | [];
 }
 
 export interface UserType {

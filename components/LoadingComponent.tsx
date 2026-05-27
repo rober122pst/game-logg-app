@@ -1,11 +1,11 @@
 import Logo from '@/assets/logos/logo-tipo.svg';
-import { Animated } from "react-native";
-import BaseInterface from "./BaseInterface";
+import { Animated } from 'react-native';
+import BaseInterface from './BaseInterface';
 
 export default function LoadingComponent() {
     return (
         <BaseInterface>
-            <Animated.View className='w-full h-full items-center justify-center' style={{ opacity: 0.5 }}>
+            <Animated.View className="h-full w-full items-center justify-center" style={{ opacity: 0.5 }}>
                 <Logo width={150} height={150} />
             </Animated.View>
         </BaseInterface>

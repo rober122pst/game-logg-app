@@ -4,10 +4,10 @@ export const themeColors = {
     'background-surface-secondary': { dark: string, light: string },
     'text-primary': { dark: string, light: string },
     'text-secondary': { dark: string, light: string },
-}
+};
 
 declare const themeConfig: {
-    themeColors: typeof themeColors,
-}
+    themeColors: typeof themeColors;
+};
 
 export default themeConfig;

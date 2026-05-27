@@ -9,21 +9,25 @@ interface State {
     occurredAtStart: Date;
     occurredAtEnd: Date;
     error?: string;
-};
+}
 
-type Action = | {
-    type: 'SET_PRECISION';
-    value: DatePrecision;
-} | {
-    type: 'SET_STATUS';
-    value: 'BEATED' | 'PLATINUM' | 'COMPLETED';
-} | {
-    type: 'SET_DIFFICULTY';
-    value: 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
-} | {
-    type: 'SET_DATE';
-    value: string;
-};
+type Action =
+    | {
+          type: 'SET_PRECISION';
+          value: DatePrecision;
+      }
+    | {
+          type: 'SET_STATUS';
+          value: 'BEATED' | 'PLATINUM' | 'COMPLETED';
+      }
+    | {
+          type: 'SET_DIFFICULTY';
+          value: 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
+      }
+    | {
+          type: 'SET_DATE';
+          value: string;
+      };
 
 export const initializeState: State = {
     precision: 'YEAR',
@@ -44,27 +48,27 @@ const dateConfig = {
 } as const;
 
 const formatDate = (value: string, precision: DatePrecision) => {
-    const cleaned = value.replace(/\D/g, "");
+    const cleaned = value.replace(/\D/g, '');
     const limited = cleaned.slice(0, dateConfig[precision].length);
 
     switch (precision) {
-        case "HOUR":
-        case "DAY":
+        case 'HOUR':
+        case 'DAY':
             if (limited.length <= 2) return limited;
             if (limited.length <= 4) return `${limited.slice(0, 2)}/${limited.slice(2)}`;
             return `${limited.slice(0, 2)}/${limited.slice(2, 4)}/${limited.slice(4)}`;
 
-        case "MONTH":
+        case 'MONTH':
             if (limited.length <= 2) return limited;
             return `${limited.slice(0, 2)}/${limited.slice(2)}`;
 
-        case "YEAR":
+        case 'YEAR':
             return limited;
     }
 };
 
 const isValidDate = (value: string, precision: DatePrecision) => {
-    const cleaned = value.replace(/\D/g, "");
+    const cleaned = value.replace(/\D/g, '');
     const expectedLength = dateConfig[precision].length;
 
     if (cleaned.length !== expectedLength) {
@@ -72,8 +76,8 @@ const isValidDate = (value: string, precision: DatePrecision) => {
     }
 
     switch (precision) {
-        case "HOUR":
-        case "DAY": {
+        case 'HOUR':
+        case 'DAY': {
             const day = Number(cleaned.slice(0, 2));
             const month = Number(cleaned.slice(2, 4));
             const year = Number(cleaned.slice(4, 8));
@@ -83,21 +87,17 @@ const isValidDate = (value: string, precision: DatePrecision) => {
 
             const date = new Date(year, month - 1, day);
 
-            return (
-                date.getFullYear() === year &&
-                date.getMonth() === month - 1 &&
-                date.getDate() === day
-            );
+            return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
         }
 
-        case "MONTH": {
+        case 'MONTH': {
             const month = Number(cleaned.slice(0, 2));
             const year = Number(cleaned.slice(2, 6));
 
             return month >= 1 && month <= 12 && year > 0;
         }
 
-        case "YEAR": {
+        case 'YEAR': {
             const year = Number(cleaned);
             return year > 0;
         }
@@ -108,7 +108,7 @@ const isValidDate = (value: string, precision: DatePrecision) => {
 };
 
 const hasDatePassed = (value: string, precision: DatePrecision) => {
-    const cleaned = value.replace(/\D/g, "");
+    const cleaned = value.replace(/\D/g, '');
     const expectedLength = dateConfig[precision].length;
     if (cleaned.length !== expectedLength) {
         return false;
@@ -117,8 +117,8 @@ const hasDatePassed = (value: string, precision: DatePrecision) => {
     const now = new Date();
 
     switch (precision) {
-        case "HOUR":
-        case "DAY": {
+        case 'HOUR':
+        case 'DAY': {
             const day = Number(cleaned.slice(0, 2));
             const month = Number(cleaned.slice(2, 4));
             const year = Number(cleaned.slice(4, 8));
@@ -131,7 +131,7 @@ const hasDatePassed = (value: string, precision: DatePrecision) => {
 
             return date < today;
         }
-        case "MONTH": {
+        case 'MONTH': {
             const month = Number(cleaned.slice(0, 2));
             const year = Number(cleaned.slice(2, 6));
 
@@ -139,7 +139,7 @@ const hasDatePassed = (value: string, precision: DatePrecision) => {
 
             return year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth() + 1);
         }
-        case "YEAR": {
+        case 'YEAR': {
             const year = Number(cleaned);
             return year < now.getFullYear();
         }
@@ -155,31 +155,31 @@ export function reducer(state: State, action: Action): State {
             return {
                 ...state,
                 action: action.value,
-            }
+            };
         case 'SET_PRECISION':
             return {
                 ...state,
                 date: '',
                 precision: action.value,
-            }
+            };
         case 'SET_DIFFICULTY':
             return {
                 ...state,
                 difficulty: action.value,
-            }
+            };
         case 'SET_DATE': {
             const date = formatDate(action.value, state.precision);
             let error = '';
 
             if (!isValidDate(date, state.precision) || !hasDatePassed(date, state.precision)) {
-                error = 'Data Inválida.'
+                error = 'Data Inválida.';
             }
 
             return {
                 ...state,
                 date,
                 error,
-            }
+            };
         }
         default:
             return state;

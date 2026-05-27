@@ -1,5 +1,5 @@
-import { api } from "@/services/api";
-import { useQuery } from "@tanstack/react-query";
+import { api } from '@/services/api';
+import { useQuery } from '@tanstack/react-query';
 
 type GameSearchResultType = {
     igdbId: number;
@@ -8,7 +8,7 @@ type GameSearchResultType = {
     coverUrl: string;
     totalRatingCount: number;
     game_type: 'Main Game' | 'Remake';
-}
+};
 
 export function useGameSearch(query: string) {
     return useQuery({
@@ -18,5 +18,5 @@ export function useGameSearch(query: string) {
             return res.data;
         },
         enabled: query.length >= 3,
-    })
+    });
 }

@@ -1,8 +1,8 @@
-import AppStack from "@/screens/app/AppStack";
-import AuthStack from "@/screens/auth/AuthStack";
-import { useAuthStore } from "@/store/useAuthStore";
+import AppStack from '@/screens/app/AppStack';
+import AuthStack from '@/screens/auth/AuthStack';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useEffect, useState } from 'react';
-import LoadingComponent from "./LoadingComponent";
+import LoadingComponent from './LoadingComponent';
 
 export function Routes() {
     const token = useAuthStore((s) => s.token);
@@ -17,7 +17,7 @@ export function Routes() {
 
     useEffect(() => {
         console.log(token);
-    }, [token])
+    }, [token]);
 
     if (!isReady) return <LoadingComponent />;
 

@@ -1,8 +1,8 @@
-import { Clock, Gamepad2, LucideProps, Trophy } from "lucide-react-native";
-import { Text, View } from "react-native";
+import { Clock, Gamepad2, LucideProps, Trophy } from 'lucide-react-native';
+import { Text, View } from 'react-native';
 
-import { useMyStats } from "@/hooks/userHooks";
-import { SectionTitle } from "./ui/SectionTitle";
+import { useMyStats } from '@/hooks/userHooks';
+import { SectionTitle } from './ui/SectionTitle';
 
 export default function StatsSection() {
     const { data, isLoading } = useMyStats();
@@ -11,36 +11,39 @@ export default function StatsSection() {
 
     const cards = [
         {
-            title: "Zerados",
+            title: 'Zerados',
             value: data.beatedGames,
             icon: Gamepad2,
-            color: "#E0055D",
+            color: '#E0055D',
         },
         {
-            title: "Platinas",
+            title: 'Platinas',
             value: data.platinumGames,
             icon: Trophy,
-            color: "#E06B05",
+            color: '#E06B05',
         },
         {
-            title: "Jogadas",
+            title: 'Jogadas',
             value: `${data.totalPlaytime / 60}h`,
             icon: Clock,
-            color: "#72B4A9",
+            color: '#72B4A9',
         },
     ];
 
-    type StatCard = { title: string; value: number | string; icon: React.ForwardRefExoticComponent<LucideProps & React.RefAttributes<SVGSVGElement>>; color: string };
+    type StatCard = {
+        title: string;
+        value: number | string;
+        icon: React.ForwardRefExoticComponent<LucideProps & React.RefAttributes<SVGSVGElement>>;
+        color: string;
+    };
 
     const Card = ({ title, value, icon, color }: StatCard) => {
         const Icon = icon;
         return (
-            <View className="bg-background-surface-dark flex-1 p-4 rounded-md items-center border border-background-surface-secondary">
+            <View className="flex-1 items-center rounded-md border border-background-surface-secondary bg-background-surface-dark p-4">
                 <Icon className="text-raspberry" color={color} />
-                <Text className="text-text-primary text-center text-lg font-metropolis-semi-bold mt-2">
-                    {value}
-                </Text>
-                <Text className="text-text-secondary text-center text-sm font-metropolis-light mt-1 uppercase">
+                <Text className="mt-2 text-center font-metropolis-semi-bold text-lg text-text-primary">{value}</Text>
+                <Text className="mt-1 text-center font-metropolis-light text-sm uppercase text-text-secondary">
                     {title}
                 </Text>
             </View>
@@ -49,14 +52,12 @@ export default function StatsSection() {
 
     return (
         <View className="flex-1">
-            <SectionTitle>
-                SEU PROGRESSO
-            </SectionTitle>
-            <View className="flex-row flex-3 mt-4 gap-4">
+            <SectionTitle>SEU PROGRESSO</SectionTitle>
+            <View className="flex-3 mt-4 flex-row gap-4">
                 {cards.map((card, index) => (
                     <Card key={index} title={card.title} value={card.value} icon={card.icon} color={card.color} />
                 ))}
             </View>
         </View>
-    )
+    );
 }

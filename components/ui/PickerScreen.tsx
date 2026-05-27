@@ -1,11 +1,11 @@
-import { FlatList, Pressable, Text } from "react-native";
+import { FlatList, Pressable, Text } from 'react-native';
 
 type Item = {
     name: string;
-}
+};
 
 interface PickerScreenProps {
-    items: Item[],
+    items: Item[];
     onSelect: (name: string) => void;
     onDestroy: () => void;
 }
@@ -15,20 +15,21 @@ export default function PickerScreen({ items, onSelect, onDestroy }: PickerScree
         const handleSelect = () => {
             onSelect(item.name);
             onDestroy();
-        }
+        };
 
         return (
-            <Pressable className="text-text-primary font-metropolis-semi-bold px-8 py-4 border-b border-background-surface-secondary" onPress={handleSelect}>
-                <Text className="text-text-primary font-metropolis-medium text-xl">
-                    {item.name}
-                </Text>
+            <Pressable
+                className="border-b border-background-surface-secondary px-8 py-4 font-metropolis-semi-bold text-text-primary"
+                onPress={handleSelect}
+            >
+                <Text className="font-metropolis-medium text-xl text-text-primary">{item.name}</Text>
             </Pressable>
         );
-    }
+    };
 
     return (
         <FlatList
-            className="absolute top-0 left-0 bg-background-surface h-screen w-full"
+            className="absolute left-0 top-0 h-screen w-full bg-background-surface"
             data={items}
             renderItem={Options}
             keyExtractor={(item) => item.name}
