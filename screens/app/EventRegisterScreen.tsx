@@ -15,33 +15,6 @@ import { useEffect, useReducer, useState } from "react";
 import { LayoutChangeEvent } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
-function DatePrecisionInputs({ datePrecision, onChange, value }: { datePrecision: 'Hora' | 'Dia' | 'Mês' | 'Ano', onChange: (value: string) => void, value: string }) {
-    let placeholder = ''
-    let maxLength = 4
-
-    switch (datePrecision) {
-        case 'Ano':
-            placeholder = 'AAAA';
-            maxLength = 4;
-            break;
-        case 'Mês':
-            placeholder = 'MM/AAAA';
-            maxLength = 7;
-            break;
-        case 'Dia':
-        case 'Hora':
-            placeholder = 'DD/MM/AAAA';
-            maxLength = 10;
-    }
-
-    return (
-        <View className="mt-4">
-            <Text className="text-text-secondary font-metropolis mb-2">Data</Text>
-            <TextInput className="flex-1 p-4 bg-background-surface-secondary rounded-lg text-text-primary" placeholderTextColor="#787878" value={value} maxLength={maxLength} keyboardType="numeric" placeholder={placeholder} onChangeText={onChange} />
-        </View>
-    );
-}
-
 export default function EventRegisterScreen() {
     const route = useRoute<RouteProp<RootStackParamList, 'UserGameRegister'>>();
     const { game } = route.params;
@@ -113,6 +86,25 @@ export default function EventRegisterScreen() {
         setFooterHeight(e.nativeEvent.layout.height);
     }
 
+    const formDate = {
+        HOUR: {
+            length: 10,
+            placeholder: 'DD/MM/AAAA',
+        },
+        DAY: {
+            length: 10,
+            placeholder: 'DD/MM/AAAA',
+        },
+        MONTH: {
+            length: 7,
+            placeholder: 'MM/AAAA',
+        },
+        YEAR: {
+            length: 4,
+            placeholder: 'AAAA',
+        },
+    }
+
     return (
         <View className="flex-1 bg-background-surface">
             <KeyboardProvider>
@@ -158,17 +150,29 @@ export default function EventRegisterScreen() {
                                     Precisão de Data do Evento
                                 </Text>
                                 <View className="flex-row items-center gap-4">
-                                    {(['Hora', 'Dia', 'Mês', 'Ano'] as const).map((option) => (
-                                        <RadioInput key={option} selected={eventForm.precision === option} onPress={() => eventDispatch({ type: 'SET_PRECISION', value: option })}>
-                                            <Text className="text-text-primary font-metropolis text-center">{option}</Text>
-                                        </RadioInput>
-                                    ))}
+                                    {(['HOUR', 'DAY', 'MONTH', 'YEAR'] as const).map((option) => {
+                                        const labelOption = {
+                                            HOUR: 'Hora',
+                                            DAY: 'Dia',
+                                            MONTH: 'Mês',
+                                            YEAR: 'Ano',
+                                        }
+
+                                        return (
+                                            <RadioInput key={option} selected={eventForm.precision === option} onPress={() => eventDispatch({ type: 'SET_PRECISION', value: option })}>
+                                                <Text className="text-text-primary font-metropolis text-center">{labelOption[option]}</Text>
+                                            </RadioInput>
+                                        )
+                                    })}
                                 </View>
-                                <DatePrecisionInputs datePrecision={eventForm.precision} onChange={(value) => eventDispatch({ type: 'SET_DATE', value })} value={eventForm.date} />
+                                <View className="mt-4">
+                                    <Text className="text-text-secondary font-metropolis mb-2">Data</Text>
+                                    <TextInput className="p-4 bg-background-surface-secondary rounded-lg text-text-primary" placeholderTextColor="#787878" value={eventForm.date} maxLength={formDate[eventForm.precision].length} keyboardType="numeric" placeholder={formDate[eventForm.precision].placeholder} onChangeText={(value) => eventDispatch({ type: 'SET_DATE', value })} />
+                                </View>
+                                {eventForm.error &&
+                                    <Text className="font-metropolis mt-2 text-red-500">{eventForm.error}</Text>
+                                }
                             </View>
-                            {eventForm.error &&
-                                <Text className="font-metropolis text-red-500">{eventForm.error}</Text>
-                            }
                             <View>
                                 <Text className="text-text-secondary font-metropolis mb-2">
                                     Dificuldade
