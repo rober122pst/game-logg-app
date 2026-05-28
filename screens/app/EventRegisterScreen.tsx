@@ -178,9 +178,23 @@ export default function EventRegisterScreen() {
                                             );
                                         })}
                                     </View>
-                                    {eventForm.precision === 'HOUR' && (
-                                        <View className="mt-4">
-                                            <Text className="mb-2 font-metropolis text-text-secondary">Hora</Text>
+                                    <View className="w-full flex-row gap-5">
+                                        {eventForm.precision === 'HOUR' && (
+                                            <View className="mt-4 flex-1">
+                                                <Text className="mb-2 font-metropolis text-text-secondary">Hora</Text>
+                                                <TextInput
+                                                    className="rounded-lg bg-background-surface-secondary p-4 text-text-primary"
+                                                    placeholderTextColor="#787878"
+                                                    value={eventForm.hour}
+                                                    maxLength={5}
+                                                    keyboardType="numeric"
+                                                    placeholder="hh:mm"
+                                                    onChangeText={(value) => eventDispatch({ type: 'SET_HOUR', value })}
+                                                />
+                                            </View>
+                                        )}
+                                        <View className="mt-4 flex-1">
+                                            <Text className="mb-2 font-metropolis text-text-secondary">Data</Text>
                                             <TextInput
                                                 className="rounded-lg bg-background-surface-secondary p-4 text-text-primary"
                                                 placeholderTextColor="#787878"
@@ -191,18 +205,6 @@ export default function EventRegisterScreen() {
                                                 onChangeText={(value) => eventDispatch({ type: 'SET_DATE', value })}
                                             />
                                         </View>
-                                    )}
-                                    <View className="mt-4">
-                                        <Text className="mb-2 font-metropolis text-text-secondary">Data</Text>
-                                        <TextInput
-                                            className="rounded-lg bg-background-surface-secondary p-4 text-text-primary"
-                                            placeholderTextColor="#787878"
-                                            value={eventForm.date}
-                                            maxLength={formDate[eventForm.precision].length}
-                                            keyboardType="numeric"
-                                            placeholder={formDate[eventForm.precision].placeholder}
-                                            onChangeText={(value) => eventDispatch({ type: 'SET_DATE', value })}
-                                        />
                                     </View>
                                     {eventForm.error && (
                                         <Text className="mt-2 font-metropolis text-red-500">{eventForm.error}</Text>

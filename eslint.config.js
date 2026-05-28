@@ -34,14 +34,13 @@ module.exports = defineConfig([
         "error",
         {
           semi: true, // exige ponto e vírgula
-          tabWidth: 4, // indentação de 2 espaços
+          tabWidth: 4, // indentação de 4 espaços
           singleQuote: true,
           trailingComma: "es5", // vírgula no final de objetos e arrays
           printWidth: 120, // limite de caracteres por linha
           bracketSpacing: true, // deixa espaço dentro de { }
           jsxBracketSameLine: false,
           bracketSameLine: false,
-          endOfLine: "crlf",
         },
       ],
       "@typescript-eslint/no-unused-vars": [

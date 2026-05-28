@@ -6,28 +6,30 @@ interface State {
     difficulty: 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
     platform: '';
     date: string;
+    hour: string;
     occurredAtStart: Date;
     occurredAtEnd: Date;
     error?: string;
 }
 
+// prettier-ignore
 type Action =
     | {
-          type: 'SET_PRECISION';
-          value: DatePrecision;
-      }
+        type: 'SET_PRECISION';
+        value: DatePrecision;
+    }
     | {
-          type: 'SET_STATUS';
-          value: 'BEATED' | 'PLATINUM' | 'COMPLETED';
-      }
+        type: 'SET_STATUS';
+        value: 'BEATED' | 'PLATINUM' | 'COMPLETED';
+    }
     | {
-          type: 'SET_DIFFICULTY';
-          value: 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
-      }
+        type: 'SET_DIFFICULTY';
+        value: 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
+    }
     | {
-          type: 'SET_DATE';
-          value: string;
-      };
+        type: 'SET_DATE' | 'SET_HOUR';
+        value: string;
+    };
 
 export const initializeState: State = {
     precision: 'YEAR',
@@ -35,6 +37,7 @@ export const initializeState: State = {
     difficulty: 'D',
     platform: '',
     date: '',
+    hour: '',
     occurredAtStart: new Date(),
     occurredAtEnd: new Date(),
     error: '',
@@ -107,6 +110,32 @@ const isValidDate = (value: string, precision: DatePrecision) => {
     }
 };
 
+const formatHour = (value: string) => {
+    const cleaned = value.replace(/\D/g, '');
+    const limited = cleaned.slice(0, 4);
+
+    if (limited.length < 2) {
+        if (parseInt(limited) > 2) return limited.padStart(2, '0');
+        return limited;
+    } else {
+        const hour = limited.slice(0, 2);
+        const minutes = limited.slice(2, 4);
+
+        if (limited.length === 2) {
+            if (limited[0] === '2' && parseInt(limited[1]) > 3) {
+                if (parseInt(limited[1]) > 5) return `0${limited[0]}:0${limited[1]}`;
+                return `0${limited[0]}:${limited[1]}`;
+            }
+
+            return limited;
+        }
+
+        if (parseInt(minutes) > 5) return `${hour}:${minutes.padStart(2, '0')}`;
+
+        return `${hour}:${minutes}`;
+    }
+};
+
 const hasDatePassed = (value: string, precision: DatePrecision) => {
     const cleaned = value.replace(/\D/g, '');
     const expectedLength = dateConfig[precision].length;
@@ -160,6 +189,7 @@ export function reducer(state: State, action: Action): State {
             return {
                 ...state,
                 date: '',
+                hour: '',
                 precision: action.value,
             };
         case 'SET_DIFFICULTY':
@@ -179,6 +209,14 @@ export function reducer(state: State, action: Action): State {
                 ...state,
                 date,
                 error,
+            };
+        }
+        case 'SET_HOUR': {
+            const hour = formatHour(action.value);
+
+            return {
+                ...state,
+                hour,
             };
         }
         default:
