@@ -9,6 +9,8 @@ interface State {
     hour: string;
     occurredAtStart: Date;
     occurredAtEnd: Date;
+    timeToEvent: number;
+    favorite: boolean;
     error?: string;
 }
 
@@ -27,8 +29,11 @@ type Action =
         value: 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
     }
     | {
-        type: 'SET_DATE' | 'SET_HOUR';
+        type: 'SET_DATE' | 'SET_HOUR' | 'SET_PLAYTIME';
         value: string;
+    }
+    | {
+        type: 'SET_FAVORITE';
     };
 
 export const initializeState: State = {
@@ -40,6 +45,8 @@ export const initializeState: State = {
     hour: '',
     occurredAtStart: new Date(),
     occurredAtEnd: new Date(),
+    timeToEvent: 0,
+    favorite: false,
     error: '',
 };
 
@@ -111,29 +118,37 @@ const isValidDate = (value: string, precision: DatePrecision) => {
 };
 
 const formatHour = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    const limited = cleaned.slice(0, 4);
+    const cleaned = value.replace(/\D/g, '').slice(0, 4);
+    if (!cleaned) return '';
 
-    if (limited.length < 2) {
-        if (parseInt(limited) > 2) return limited.padStart(2, '0');
-        return limited;
-    } else {
-        const hour = limited.slice(0, 2);
-        const minutes = limited.slice(2, 4);
-
-        if (limited.length === 2) {
-            if (limited[0] === '2' && parseInt(limited[1]) > 3) {
-                if (parseInt(limited[1]) > 5) return `0${limited[0]}:0${limited[1]}`;
-                return `0${limited[0]}:${limited[1]}`;
-            }
-
-            return limited;
-        }
-
-        if (parseInt(minutes) > 5) return `${hour}:${minutes.padStart(2, '0')}`;
-
-        return `${hour}:${minutes}`;
+    if (cleaned.length === 1) {
+        if (parseInt(cleaned) > 2) return `0${cleaned}`;
+        return cleaned;
     }
+
+    if (cleaned.length === 2) {
+        if (parseInt(cleaned) > 23) {
+            const hour = `0${cleaned[0]}`;
+            const minuteTen = cleaned[1];
+
+            if (parseInt(minuteTen) > 5) return `${hour}:0${minuteTen}`;
+
+            return `${hour}:${minuteTen}`;
+        }
+        return cleaned;
+    }
+
+    if (cleaned.length >= 3) {
+        const hour = cleaned.slice(0, 2);
+        const m1 = cleaned[2];
+        const m2 = cleaned[3];
+
+        if (parseInt(m1) > 5) return `${hour}:0${m1}`;
+
+        return cleaned.length === 4 ? `${hour}:${m1}${m2}` : `${hour}:${m1}`;
+    }
+
+    return cleaned;
 };
 
 const hasDatePassed = (value: string, precision: DatePrecision) => {
@@ -158,7 +173,7 @@ const hasDatePassed = (value: string, precision: DatePrecision) => {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            return date < today;
+            return date <= today;
         }
         case 'MONTH': {
             const month = Number(cleaned.slice(0, 2));
@@ -166,11 +181,11 @@ const hasDatePassed = (value: string, precision: DatePrecision) => {
 
             if (month < 1 || month > 12) return false;
 
-            return year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth() + 1);
+            return year <= now.getFullYear() || (year === now.getFullYear() && month <= now.getMonth() + 1);
         }
         case 'YEAR': {
             const year = Number(cleaned);
-            return year < now.getFullYear();
+            return year <= now.getFullYear();
         }
 
         default:
@@ -201,9 +216,9 @@ export function reducer(state: State, action: Action): State {
             const date = formatDate(action.value, state.precision);
             let error = '';
 
-            if (!isValidDate(date, state.precision) || !hasDatePassed(date, state.precision)) {
+            if (!isValidDate(date, state.precision)) {
                 error = 'Data Inválida.';
-            }
+            } else if (!hasDatePassed(date, state.precision)) error = 'Data ainda não aconteceu.';
 
             return {
                 ...state,
@@ -219,6 +234,16 @@ export function reducer(state: State, action: Action): State {
                 hour,
             };
         }
+        case 'SET_FAVORITE':
+            return {
+                ...state,
+                favorite: !state.favorite,
+            };
+        case 'SET_PLAYTIME':
+            return {
+                ...state,
+                timeToEvent: parseInt(action.value),
+            };
         default:
             return state;
     }

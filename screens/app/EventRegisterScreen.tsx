@@ -12,6 +12,7 @@ import PickerScreen from '@/components/ui/PickerScreen';
 import RadioInput from '@/components/ui/RadioInput';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
+import { Heart } from 'lucide-react-native/icons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function EventRegisterScreen() {
@@ -108,8 +109,9 @@ export default function EventRegisterScreen() {
         <View className="flex-1 bg-background-surface">
             <KeyboardProvider>
                 <KeyboardAwareScrollView
-                    className="mt-6 px-12"
-                    extraScrollHeight={footerHeight + 67}
+                    className="my-6 px-12"
+                    extraScrollHeight={footerHeight + 32}
+                    extraHeight={footerHeight + 67}
                     enableOnAndroid={true}
                     keyboardShouldPersistTaps="handled"
                 >
@@ -148,7 +150,7 @@ export default function EventRegisterScreen() {
                     {registerForm.status !== 'PLAYING' &&
                         registerForm.status !== 'DROPPED' &&
                         registerForm.status !== 'WISHLIST' && (
-                            <View className="mt-6">
+                            <View className="my-6">
                                 <SectionTitle>Informações do Evento</SectionTitle>
                                 <View className="mb-4">
                                     <Text className="mb-2 font-metropolis text-text-secondary">
@@ -188,7 +190,7 @@ export default function EventRegisterScreen() {
                                                     value={eventForm.hour}
                                                     maxLength={5}
                                                     keyboardType="numeric"
-                                                    placeholder="hh:mm"
+                                                    placeholder="HH:mm"
                                                     onChangeText={(value) => eventDispatch({ type: 'SET_HOUR', value })}
                                                 />
                                             </View>
@@ -210,7 +212,7 @@ export default function EventRegisterScreen() {
                                         <Text className="mt-2 font-metropolis text-red-500">{eventForm.error}</Text>
                                     )}
                                 </View>
-                                <View>
+                                <View className="mb-2">
                                     <Text className="mb-2 font-metropolis text-text-secondary">Dificuldade</Text>
                                     <View className="flex-row items-center gap-4">
                                         {(['D', 'C', 'B', 'A', 'S', 'SS'] as const).map((diff) => (
@@ -224,6 +226,50 @@ export default function EventRegisterScreen() {
                                                 </Text>
                                             </RadioInput>
                                         ))}
+                                    </View>
+                                </View>
+                                <View className="flex-row gap-4">
+                                    <View className="mt-2 flex-1">
+                                        <Text className="mb-2 font-metropolis text-text-secondary">
+                                            Tempo Jogado (h)
+                                        </Text>
+                                        <TextInput
+                                            className="rounded-lg bg-background-surface-secondary p-4 text-text-primary"
+                                            placeholderTextColor="#787878"
+                                            value={eventForm.hour}
+                                            maxLength={5}
+                                            keyboardType="numeric"
+                                            placeholder="Ex: 45"
+                                            onChangeText={(value) => eventDispatch({ type: 'SET_HOUR', value })}
+                                        />
+                                    </View>
+                                    <View className="mt-2 flex-1">
+                                        <View className="mb-7" />
+                                        <RadioInput
+                                            onPress={() => eventDispatch({ type: 'SET_FAVORITE' })}
+                                            selected={eventForm.favorite}
+                                        >
+                                            <View className="flex-row gap-2 px-2">
+                                                <Heart
+                                                    color={
+                                                        eventForm.favorite
+                                                            ? tailwindColors.raspberry
+                                                            : tailwindColors['text-secondary'].dark
+                                                    }
+                                                    fill={eventForm.favorite ? tailwindColors.raspberry : '#ffffff00'}
+                                                    size={19}
+                                                />
+                                                <Text
+                                                    className={
+                                                        eventForm.favorite
+                                                            ? 'font-metropolis-semi-bold text-raspberry'
+                                                            : 'font-metropolis text-text-secondary'
+                                                    }
+                                                >
+                                                    Favorito
+                                                </Text>
+                                            </View>
+                                        </RadioInput>
                                     </View>
                                 </View>
                             </View>
