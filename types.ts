@@ -1,3 +1,5 @@
+import { GameDifficulty, GameStatus } from './reducers/gameRegisterReducer';
+
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
@@ -19,15 +21,13 @@ export interface ProfileType {
     userId: string | null;
 }
 
-export type StatusEnum = 'PLAYING' | 'BEATED' | 'PLATINUM' | 'COMPLETED' | 'WISHLIST' | 'DROPPED';
-
 export interface UserGameType {
     id: string | null;
-    status: StatusEnum | null;
+    status: GameStatus | null;
     playtime: number | null;
     comment: string | null;
     favorite: boolean | null;
-    difficulty: 'D' | 'S' | 'C' | 'B' | 'A' | 'SS' | null;
+    difficulty: GameDifficulty | null;
     acquiredAt: Date | null;
     gameId: string | null;
     userId: string | null;

@@ -1,27 +1,46 @@
+export type GameDifficulty = 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
+
+export type GameStatus = 'PLAYING' | 'BEATED' | 'COMPLETED' | 'PLATINUM' | 'PERFECT' | 'DROPPED';
+
 interface State {
-    status: 'PLAYING' | 'BEATED' | 'PLATINUM' | 'COMPLETED' | 'WISHLIST' | 'DROPPED';
+    status: GameStatus;
     acquiredAt: string;
-    platform: string;
+    platform: {
+        id: string;
+        name: string;
+    };
+    favorite: boolean;
+    difficulty: GameDifficulty;
 }
 
+// prettier-ignore
 type Action =
     | {
-          type: 'SET_STATUS';
-          value: 'PLAYING' | 'BEATED' | 'PLATINUM' | 'COMPLETED' | 'WISHLIST' | 'DROPPED';
-      }
+        type: 'SET_STATUS';
+        value: GameStatus;
+    }
     | {
-          type: 'SET_PLATFORM';
-          value: string;
-      }
+        type: 'SET_PLATFORM';
+        value: { id: string, name: string };
+    }
     | {
-          type: 'SET_ACQUIRED';
-          year: string;
-      };
+        type: 'SET_ACQUIRED';
+        year: string;
+    }
+    | {
+        type: 'SET_DIFFICULTY';
+        value: GameDifficulty;
+    }
+    | {
+        type: 'SET_FAVORITE';
+    };
 
 export const initializeState: State = {
     status: 'PLAYING',
     acquiredAt: new Date().toLocaleDateString(),
-    platform: '',
+    platform: { id: '', name: '' },
+    favorite: false,
+    difficulty: 'C',
 };
 
 export function reducer(state: State, action: Action): State {
@@ -44,6 +63,16 @@ export function reducer(state: State, action: Action): State {
                 acquiredAt: numericValue.slice(0, 4),
             };
         }
+        case 'SET_DIFFICULTY':
+            return {
+                ...state,
+                difficulty: action.value,
+            };
+        case 'SET_FAVORITE':
+            return {
+                ...state,
+                favorite: !state.favorite,
+            };
         default:
             return state;
     }

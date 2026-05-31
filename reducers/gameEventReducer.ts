@@ -1,16 +1,13 @@
 export type DatePrecision = 'HOUR' | 'DAY' | 'MONTH' | 'YEAR';
+export type GameAction = 'BEATED' | 'COMPLETED' | 'PLATINUM' | 'PERFECT';
 
 interface State {
     precision: DatePrecision;
-    action: 'BEATED' | 'PLATINUM' | 'COMPLETED';
-    difficulty: 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
+    action: GameAction;
     platform: '';
     date: string;
     hour: string;
-    occurredAtStart: Date;
-    occurredAtEnd: Date;
-    timeToEvent: number;
-    favorite: boolean;
+    timeToEvent: string;
     error?: string;
 }
 
@@ -22,31 +19,20 @@ type Action =
     }
     | {
         type: 'SET_STATUS';
-        value: 'BEATED' | 'PLATINUM' | 'COMPLETED';
-    }
-    | {
-        type: 'SET_DIFFICULTY';
-        value: 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
+        value: GameAction;
     }
     | {
         type: 'SET_DATE' | 'SET_HOUR' | 'SET_PLAYTIME';
         value: string;
-    }
-    | {
-        type: 'SET_FAVORITE';
     };
 
 export const initializeState: State = {
     precision: 'YEAR',
     action: 'BEATED',
-    difficulty: 'D',
     platform: '',
     date: '',
     hour: '',
-    occurredAtStart: new Date(),
-    occurredAtEnd: new Date(),
-    timeToEvent: 0,
-    favorite: false,
+    timeToEvent: '',
     error: '',
 };
 
@@ -207,11 +193,6 @@ export function reducer(state: State, action: Action): State {
                 hour: '',
                 precision: action.value,
             };
-        case 'SET_DIFFICULTY':
-            return {
-                ...state,
-                difficulty: action.value,
-            };
         case 'SET_DATE': {
             const date = formatDate(action.value, state.precision);
             let error = '';
@@ -234,15 +215,10 @@ export function reducer(state: State, action: Action): State {
                 hour,
             };
         }
-        case 'SET_FAVORITE':
-            return {
-                ...state,
-                favorite: !state.favorite,
-            };
         case 'SET_PLAYTIME':
             return {
                 ...state,
-                timeToEvent: parseInt(action.value),
+                timeToEvent: action.value,
             };
         default:
             return state;
