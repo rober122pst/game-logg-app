@@ -51,13 +51,13 @@ export default function StatsSection() {
     };
 
     return (
-        <View className="flex-1">
+        <>
             <SectionTitle>SEU PROGRESSO</SectionTitle>
             <View className="flex-3 mt-4 flex-row gap-4">
                 {cards.map((card, index) => (
                     <Card key={index} title={card.title} value={card.value} icon={card.icon} color={card.color} />
                 ))}
             </View>
-        </View>
+        </>
     );
 }

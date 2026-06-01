@@ -6,7 +6,7 @@ export type RootStackParamList = {
     ForgotPassword: undefined;
     Home: undefined;
     Search: undefined;
-    Profile: undefined;
+    Profile: { profile: ProfileType };
     Game: { igdbId: number; title: string; coverUrl: string; slug: string };
     UserGameRegister: { game: GameType };
 };
@@ -22,17 +22,27 @@ export interface ProfileType {
 }
 
 export interface UserGameType {
-    id: string | null;
-    status: GameStatus | null;
-    playtime: number | null;
+    id: string;
+    platformIds: string[];
+    status: GameStatus;
+    objective: string;
     comment: string | null;
-    favorite: boolean | null;
-    difficulty: GameDifficulty | null;
+    favorite: boolean;
+    difficulty: GameDifficulty;
     acquiredAt: Date | null;
-    gameId: string | null;
-    userId: string | null;
-    createdAt: Date | null;
-    updateAt: Date | null;
+    price: number | null;
+    gameId: string;
+    userId: string;
+    createdAt: Date;
+    updateAt: Date;
+    game: GameType;
+    steam: {
+        playtimeForever: number;
+        lastPlayed: Date | null;
+        playtime_2weeks: number;
+        achievementsPercent: number;
+        isPlatinum: boolean;
+    } | null;
 }
 
 export interface PlatformType {

@@ -1,8 +1,7 @@
-import { FlatList, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import BaseInterface from '@/components/BaseInterface';
-import GameCover from '@/components/GamesCover';
-import Header from '@/components/Header';
+import GamesHorizontalList from '@/components/GamesHorizontalList';
 import LoadingComponent from '@/components/LoadingComponent';
 import StatsSection from '@/components/StatsSection';
 import { SectionTitle } from '@/components/ui/SectionTitle';
@@ -25,22 +24,13 @@ export default function Home() {
 
     return (
         <BaseInterface navbar>
-            <Header />
-            <ScrollView className="flex-1 gap-8 px-4 py-8">
+            <ScrollView className="flex-1 gap-8 px-4 pb-8">
                 <StatsSection />
                 <View className="mt-8">
                     <SectionTitle variant="header" Icon={Flame}>
                         Em destaque
                     </SectionTitle>
-                    <FlatList
-                        className="rounded-lg"
-                        data={games}
-                        renderItem={({ item }) => <GameCover game={item} name={item.title} />}
-                        keyExtractor={(item) => item.id}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{ gap: 32 }}
-                    />
+                    <GamesHorizontalList games={games} />
                 </View>
             </ScrollView>
         </BaseInterface>

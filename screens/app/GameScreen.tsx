@@ -23,7 +23,7 @@ export default function GameScreen() {
     const scrollRef = useAnimatedRef<Animated.ScrollView>();
     const scrollOfset = useScrollOffset(scrollRef);
 
-    const navigation = useNavigationCustom('Game');
+    const navigation = useNavigationCustom<'Game'>();
 
     const IMG_HEIGHT = 256;
 
