@@ -1,20 +1,21 @@
+import { GameRegisterPageOne, GameRegisterPageTwo, RatingGameForm } from '@/components/GameRegisterPages';
+import { AddUserGame, useAddUserGame } from '@/hooks/userGamesHooks';
 import { initializeState as eventInitialState, reducer as eventReducer } from '@/reducers/gameEventReducer';
+import { gameRatingReducer, initialGameRatingState } from '@/reducers/gameRatingReducer';
 import {
     GameObjective,
     initializeState as registerInitialState,
     reducer as registerReducer,
 } from '@/reducers/gameRegisterReducer';
-import { RootStackParamList } from '@/types';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useReducer, useState } from 'react';
 import { LayoutChangeEvent, Pressable, Text, View } from 'react-native';
 import { KeyboardProvider, KeyboardStickyView } from 'react-native-keyboard-controller';
 
-import { GameRegisterPageOne, GameRegisterPageTwo, RatingGameForm } from '@/components/GameRegisterPages';
 import { CustomButton } from '@/components/ui/CustomButton';
 import PickerScreen from '@/components/ui/PickerScreen';
 import { useNavigationCustom } from '@/hooks/useNavigationCustom';
-import { AddUserGame, useAddUserGame } from '@/hooks/userGamesHooks';
+import { RootStackParamList } from '@/types';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function EventRegisterScreen() {
@@ -22,6 +23,7 @@ export default function EventRegisterScreen() {
     const { game } = route.params;
     const [registerForm, registerDispatch] = useReducer(registerReducer, registerInitialState);
     const [eventForm, eventDispatch] = useReducer(eventReducer, eventInitialState);
+    const [ratingForm, ratingDispatch] = useReducer(gameRatingReducer, initialGameRatingState);
     const [showPicker, setShowPicker] = useState(false);
     const [showObjectivePicker, setObjectiveShowPicker] = useState(false);
 
@@ -69,7 +71,13 @@ export default function EventRegisterScreen() {
             onShowObjectivePicker={() => setObjectiveShowPicker(true)}
         />,
         <GameRegisterPageTwo key="page2" state={eventForm} dispatch={eventDispatch} onNext={() => setPage(2)} />,
-        <RatingGameForm key="page3" state={registerForm} dispatch={registerDispatch} />,
+        <RatingGameForm
+            key="page3"
+            register={registerForm}
+            registerDispatch={registerDispatch}
+            ratingState={ratingForm}
+            ratingDispatch={ratingDispatch}
+        />,
     ];
 
     const onSubmit = () => {
