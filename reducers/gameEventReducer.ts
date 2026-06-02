@@ -1,7 +1,7 @@
 export type DatePrecision = 'HOUR' | 'DAY' | 'MONTH' | 'YEAR';
 export type GameAction = 'BEATED' | 'COMPLETED' | 'PLATINUM' | 'PERFECT';
 
-interface State {
+export interface EventState {
     precision: DatePrecision;
     action: GameAction;
     platform: '';
@@ -12,7 +12,7 @@ interface State {
 }
 
 // prettier-ignore
-type Action =
+export type EventAction =
     | {
         type: 'SET_PRECISION';
         value: DatePrecision;
@@ -26,7 +26,7 @@ type Action =
         value: string;
     };
 
-export const initializeState: State = {
+export const initializeState: EventState = {
     precision: 'YEAR',
     action: 'BEATED',
     platform: '',
@@ -179,7 +179,7 @@ const hasDatePassed = (value: string, precision: DatePrecision) => {
     }
 };
 
-export function reducer(state: State, action: Action): State {
+export function reducer(state: EventState, action: EventAction): EventState {
     switch (action.type) {
         case 'SET_STATUS':
             return {

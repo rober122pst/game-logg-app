@@ -1,20 +1,28 @@
+import { GameAction } from './gameEventReducer';
+
 export type GameDifficulty = 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
 
-export type GameStatus = 'PLAYING' | 'BEATED' | 'COMPLETED' | 'PLATINUM' | 'PERFECT' | 'DROPPED';
+export type GameStatus = 'PLAYING' | 'I_WILL_PLAY' | 'BEAT' | 'DROPPED';
 
-interface State {
+export type GameObjective = GameAction;
+
+export interface RegisterState {
     status: GameStatus;
-    acquiredAt: string;
     platform: {
         id: string;
         name: string;
     };
-    favorite: boolean;
-    difficulty: GameDifficulty;
+    price: string;
+    objective: {
+        id: GameObjective;
+        name: string;
+    };
+    difficulty?: GameDifficulty;
+    favorite?: boolean;
 }
 
 // prettier-ignore
-type Action =
+export type RegisterAction =
     | {
         type: 'SET_STATUS';
         value: GameStatus;
@@ -24,8 +32,12 @@ type Action =
         value: { id: string, name: string };
     }
     | {
-        type: 'SET_ACQUIRED';
-        year: string;
+        type: 'SET_PRICE';
+        value: string;
+    }
+    | {
+        type: 'SET_OBJECTIVE';
+        value: { id: GameObjective, name: string };
     }
     | {
         type: 'SET_DIFFICULTY';
@@ -33,17 +45,42 @@ type Action =
     }
     | {
         type: 'SET_FAVORITE';
+        value: boolean;
     };
 
-export const initializeState: State = {
-    status: 'PLAYING',
-    acquiredAt: new Date().toLocaleDateString(),
+export const initializeState: RegisterState = {
+    status: 'I_WILL_PLAY',
     platform: { id: '', name: '' },
-    favorite: false,
-    difficulty: 'C',
+    price: '',
+    objective: {
+        id: 'BEATED',
+        name: '',
+    },
 };
 
-export function reducer(state: State, action: Action): State {
+function formatPrice(value: string): string {
+    let cleaned = value.replace(/[^0-9.,]/g, '');
+
+    // troca vírgula por ponto
+    cleaned = cleaned.replace(',', '.');
+
+    // impede mais de um ponto
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+        cleaned = parts[0] + '.' + parts.slice(1).join('');
+    }
+
+    // limita a 2 casas decimais
+    const [integer = '', decimal = ''] = cleaned.split('.');
+
+    if (cleaned.includes('.')) {
+        return `${integer}.${decimal.slice(0, 2)}`;
+    }
+
+    return integer;
+}
+
+export function reducer(state: RegisterState, action: RegisterAction): RegisterState {
     switch (action.type) {
         case 'SET_STATUS':
             return {
@@ -55,14 +92,19 @@ export function reducer(state: State, action: Action): State {
                 ...state,
                 platform: action.value,
             };
-        case 'SET_ACQUIRED': {
-            const numericValue = action.year.replace(/[^0-9]/g, '');
+        case 'SET_PRICE': {
+            const formatedValue = formatPrice(action.value);
 
             return {
                 ...state,
-                acquiredAt: numericValue.slice(0, 4),
+                price: formatedValue,
             };
         }
+        case 'SET_OBJECTIVE':
+            return {
+                ...state,
+                objective: action.value,
+            };
         case 'SET_DIFFICULTY':
             return {
                 ...state,
@@ -71,7 +113,7 @@ export function reducer(state: State, action: Action): State {
         case 'SET_FAVORITE':
             return {
                 ...state,
-                favorite: !state.favorite,
+                favorite: !action.value,
             };
         default:
             return state;

@@ -1,5 +1,5 @@
 import { DatePrecision, GameAction } from '@/reducers/gameEventReducer';
-import { GameDifficulty, GameStatus } from '@/reducers/gameRegisterReducer';
+import { GameObjective, GameStatus } from '@/reducers/gameRegisterReducer';
 import { api } from '@/services/api';
 import { useUserStore } from '@/store/useUserStore';
 import { UserGameType } from '@/types';
@@ -17,13 +17,10 @@ type AddGameEvent = {
 
 export type AddUserGame = {
     status: GameStatus;
-    comment?: string;
-    favorite: boolean;
-    difficulty: GameDifficulty;
-    acquiredAt?: Date;
     gameId: string;
     platformsIds: string[];
-    beatEvents: AddGameEvent[];
+    price?: number;
+    objective: GameObjective;
 };
 
 export function useAddUserGame() {
