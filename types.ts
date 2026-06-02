@@ -3,6 +3,7 @@ export type RootStackParamList = {
     Register: undefined;
     ForgotPassword: undefined;
     Home: undefined;
+    ConnectSteam: undefined;
 }
 
 export interface ProfileType {
