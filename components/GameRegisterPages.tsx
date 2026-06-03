@@ -1,8 +1,18 @@
 import { EventAction, EventState, GameAction } from '@/reducers/gameEventReducer';
 import { GameRatingAction, GameRatingState } from '@/reducers/gameRatingReducer';
 import { GameStatus, RegisterAction, RegisterState } from '@/reducers/gameRegisterReducer';
-import { CheckCircle2, Gamepad, Gamepad2, HeartOff, LucideProps, Percent, Star, Trophy } from 'lucide-react-native';
-import { FlatList, Text, View } from 'react-native';
+import {
+    CheckCircle2,
+    Gamepad,
+    Gamepad2,
+    Heart,
+    HeartOff,
+    LucideProps,
+    Percent,
+    Star,
+    Trophy,
+} from 'lucide-react-native';
+import { FlatList, Pressable, Text, View } from 'react-native';
 import { FormInputText, PickerSelect } from './ui/Forms';
 
 import { useTailwindColors } from '@/hooks/useTailwindColors';
@@ -18,11 +28,10 @@ interface PageOneProps {
     game: GameType;
     state: RegisterState;
     dispatch: React.Dispatch<RegisterAction>;
-    onShowPicker: () => void;
     onShowObjectivePicker: () => void;
 }
 
-export function GameRegisterPageOne({ game, state, dispatch, onShowPicker, onShowObjectivePicker }: PageOneProps) {
+export function GameRegisterPageOne({ game, state, dispatch, onShowObjectivePicker }: PageOneProps) {
     type statusOptionsType = {
         type: GameStatus;
         icon: React.ForwardRefExoticComponent<LucideProps & React.RefAttributes<SVGSVGElement>>;
@@ -91,7 +100,6 @@ export function GameRegisterPageOne({ game, state, dispatch, onShowPicker, onSho
                     scrollEnabled={false}
                 />
             </View>
-            <PickerSelect title="Plataforma" value={state.platform.name} onPress={onShowPicker} />
             <View className="flex-row gap-4">
                 <FormInputText
                     label="Preço (R$)"
@@ -112,10 +120,12 @@ export function GameRegisterPageOne({ game, state, dispatch, onShowPicker, onSho
 interface PageTwoProps {
     state: EventState;
     dispatch: React.Dispatch<EventAction>;
+    platformName: string;
+    onShowPicker: () => void;
     onNext: () => void;
 }
 
-export function GameRegisterPageTwo({ state, dispatch, onNext }: PageTwoProps) {
+export function GameRegisterPageTwo({ state, dispatch, platformName, onShowPicker, onNext }: PageTwoProps) {
     type statusOptionsType = {
         type: GameAction;
         icon: React.ForwardRefExoticComponent<LucideProps & React.RefAttributes<SVGSVGElement>>;
@@ -197,6 +207,7 @@ export function GameRegisterPageTwo({ state, dispatch, onNext }: PageTwoProps) {
                     scrollEnabled={false}
                 />
             </View>
+            <PickerSelect title="Plataforma" value={platformName} onPress={onShowPicker} />
             <FormInputText label="Total de tempo jogado até agora (h)" placeholder="Ex: 87" keyboardType="numeric" />
             <Text className="mt-1.5 font-metropolis-light text-sm text-text-secondary">
                 Esse valor será registrado como tempo inicial. Você poderá editá-lo depois para colocar o tempo real
@@ -261,20 +272,55 @@ export function GameRegisterPageTwo({ state, dispatch, onNext }: PageTwoProps) {
                 tempo gasto por mês, por exemplo. Caso você não saiba ou não queira preencher, deixe em branco.
             </Text>
             <View className="mt-4">
-                <CustomButton title="Quero Avaliar" variant="secondary" onPress={onNext} />
+                <CustomButton title="Quero Avaliar o Jogo" variant="secondary" onPress={onNext} />
             </View>
         </>
     );
 }
 
 interface RatingGameFormProps {
-    register: RegisterState;
-    registerDispatch: React.Dispatch<RegisterAction>;
-    ratingState: GameRatingState;
-    ratingDispatch: React.Dispatch<GameRatingAction>;
+    state: GameRatingState;
+    dispatch: React.Dispatch<GameRatingAction>;
 }
 
-export function RatingGameForm({ register, registerDispatch, ratingState, ratingDispatch }: RatingGameFormProps) {
+type SliderRatingProps = {
+    label: string;
+    value: number;
+    category: keyof GameRatingState;
+    dispatch: React.Dispatch<GameRatingAction>;
+};
+
+const SliderRating = ({ label, value, category, dispatch }: SliderRatingProps) => {
+    const tailwindColors = useTailwindColors();
+
+    return (
+        <View>
+            <View className="flex-row items-center justify-between gap-2">
+                <Text className="font-metropolis-light text-lg text-text-secondary">{label}</Text>
+                <Text className="font-metropolis-semi-bold text-lg text-text-primary">{value.toFixed(1)}</Text>
+            </View>
+            <Slider
+                maximumTrackTintColor={tailwindColors['background-surface'].dark}
+                minimumTrackTintColor={tailwindColors.raspberry}
+                trackStyle={{ height: 8, borderRadius: 99999 }}
+                thumbStyle={{ height: 18, width: 18 }}
+                thumbTintColor={tailwindColors.raspberry}
+                value={value}
+                onValueChange={(value) =>
+                    dispatch({
+                        type: 'SET_SCORE',
+                        payload: { category: category, score: value[0] },
+                    })
+                }
+                minimumValue={0}
+                maximumValue={10}
+                step={0.5}
+            />
+        </View>
+    );
+};
+
+export function RatingGameForm({ state, dispatch }: RatingGameFormProps) {
     const tailwindColors = useTailwindColors();
 
     return (
@@ -286,8 +332,8 @@ export function RatingGameForm({ register, registerDispatch, ratingState, rating
                     {(['D', 'C', 'B', 'A', 'S', 'SS'] as const).map((diff) => (
                         <RadioInput
                             key={diff}
-                            selected={register.difficulty === diff}
-                            onPress={() => registerDispatch({ type: 'SET_DIFFICULTY', value: diff })}
+                            selected={state.difficulty === diff}
+                            onPress={() => dispatch({ type: 'SET_DIFFICULTY', value: diff })}
                         >
                             <Text className="text-center font-metropolis text-text-primary">
                                 {diff === 'SS' ? 'S+' : diff}
@@ -298,117 +344,53 @@ export function RatingGameForm({ register, registerDispatch, ratingState, rating
             </View>
             <View className="mt-4">
                 <View className="rounded-lg bg-background-surface-secondary p-4">
-                    <View className="flex-row justify-between">
+                    <View className="flex-row items-start justify-between">
                         <SectionTitle>Notas</SectionTitle>
-                        <View className="flex-row gap-2">
-                            <Text className="font-metropolis-black" style={{ color: ratingColor(ratingState.overall) }}>
-                                {ratingState.overall.toFixed(1)}
-                            </Text>
-                            <Star fill={tailwindColors['cocoa-brown']} />
+                        <View className="flex-row items-center gap-4">
+                            <Pressable
+                                className="h-[25px] w-[25px] items-center justify-center"
+                                onPress={() => dispatch({ type: 'SET_FAVORITE' })}
+                            >
+                                <Heart
+                                    color={
+                                        state.favorite
+                                            ? tailwindColors.raspberry
+                                            : tailwindColors['text-secondary'].dark
+                                    }
+                                    fill={state.favorite ? tailwindColors.raspberry : '#00000000'}
+                                    size={20}
+                                />
+                            </Pressable>
+                            <View className="flex-row items-center gap-2 rounded-lg bg-background-surface px-2 py-1">
+                                <Text
+                                    className="font-metropolis-black"
+                                    style={{ color: ratingColor(state.overall + Number(state.favorite)) }}
+                                >
+                                    {(state.overall + Number(state.favorite ?? 0)).toFixed(1)}
+                                </Text>
+                                <Star
+                                    fill={tailwindColors['cocoa-brown']}
+                                    color={tailwindColors['cocoa-brown']}
+                                    size={16}
+                                />
+                            </View>
                         </View>
                     </View>
-                    <View>
-                        <View className="flex-row items-center justify-between gap-2">
-                            <Text className="font-metropolis-light text-lg text-text-secondary">Gameplay</Text>
-                            <Text className="font-metropolis-semi-bold text-lg text-text-primary">
-                                {ratingState.gameplay.toFixed(1)}
-                            </Text>
-                        </View>
-                        <Slider
-                            maximumTrackTintColor={tailwindColors['background-surface'].dark}
-                            minimumTrackTintColor={tailwindColors.raspberry}
-                            trackStyle={{ height: 8, borderRadius: 99999 }}
-                            thumbStyle={{ height: 18, width: 18 }}
-                            thumbTintColor={tailwindColors.raspberry}
-                            value={ratingState.gameplay}
-                            onValueChange={(value) =>
-                                ratingDispatch({
-                                    type: 'SET_SCORE',
-                                    payload: { category: 'gameplay', score: value[0] },
-                                })
-                            }
-                            minimumValue={0}
-                            maximumValue={10}
-                            step={0.5}
-                        />
-                    </View>
-                    <View>
-                        <View className="flex-row items-center justify-between gap-2">
-                            <Text className="font-metropolis-light text-lg text-text-secondary">Gráficos</Text>
-                            <Text className="font-metropolis-semi-bold text-lg text-text-primary">
-                                {ratingState.graphics.toFixed(1)}
-                            </Text>
-                        </View>
-                        <Slider
-                            maximumTrackTintColor={tailwindColors['background-surface'].dark}
-                            minimumTrackTintColor={tailwindColors.raspberry}
-                            trackStyle={{ height: 8, borderRadius: 99999 }}
-                            thumbStyle={{ height: 18, width: 18 }}
-                            thumbTintColor={tailwindColors.raspberry}
-                            value={ratingState.graphics}
-                            onValueChange={(value) =>
-                                ratingDispatch({
-                                    type: 'SET_SCORE',
-                                    payload: { category: 'graphics', score: value[0] },
-                                })
-                            }
-                            minimumValue={0}
-                            maximumValue={10}
-                            step={0.5}
-                        />
-                    </View>
-                    <View>
-                        <View className="flex-row items-center justify-between gap-2">
-                            <Text className="font-metropolis-light text-lg text-text-secondary">História</Text>
-                            <Text className="font-metropolis-semi-bold text-lg text-text-primary">
-                                {ratingState.story.toFixed(1)}
-                            </Text>
-                        </View>
-                        <Slider
-                            maximumTrackTintColor={tailwindColors['background-surface'].dark}
-                            minimumTrackTintColor={tailwindColors.raspberry}
-                            trackStyle={{ height: 8, borderRadius: 99999 }}
-                            thumbStyle={{ height: 18, width: 18 }}
-                            thumbTintColor={tailwindColors.raspberry}
-                            value={ratingState.story}
-                            onValueChange={(value) =>
-                                ratingDispatch({
-                                    type: 'SET_SCORE',
-                                    payload: { category: 'story', score: value[0] },
-                                })
-                            }
-                            minimumValue={0}
-                            maximumValue={10}
-                            step={0.5}
-                        />
-                    </View>
-                    <View>
-                        <View className="flex-row items-center justify-between gap-2">
-                            <Text className="font-metropolis-light text-lg text-text-secondary">Trilha Sonora</Text>
-                            <Text className="font-metropolis-semi-bold text-lg text-text-primary">
-                                {ratingState.sound.toFixed(1)}
-                            </Text>
-                        </View>
-                        <Slider
-                            maximumTrackTintColor={tailwindColors['background-surface'].dark}
-                            minimumTrackTintColor={tailwindColors.raspberry}
-                            trackStyle={{ height: 8, borderRadius: 99999 }}
-                            thumbStyle={{ height: 18, width: 18 }}
-                            thumbTintColor={tailwindColors.raspberry}
-                            value={ratingState.sound}
-                            onValueChange={(value) =>
-                                ratingDispatch({
-                                    type: 'SET_SCORE',
-                                    payload: { category: 'sound', score: value[0] },
-                                })
-                            }
-                            minimumValue={0}
-                            maximumValue={10}
-                            step={0.5}
-                        />
-                    </View>
+                    <SliderRating label="Gameplay" value={state.gameplay} category="gameplay" dispatch={dispatch} />
+                    <SliderRating label="Gráficos" value={state.graphics} category="graphics" dispatch={dispatch} />
+                    <SliderRating label="História" value={state.story} category="story" dispatch={dispatch} />
+                    <SliderRating label="Trilha Sonora" value={state.sound} category="sound" dispatch={dispatch} />
                 </View>
             </View>
+            <FormInputText
+                label="Review (Opicional)"
+                multiline
+                numberOfLines={4}
+                placeholder="Escreva o que você achou do jogo!"
+                value={state.comment}
+                onChangeText={(value) => dispatch({ type: 'SET_COMMENT', value })}
+                style={{ minHeight: 100, textAlignVertical: 'top' }}
+            />
         </>
     );
 }

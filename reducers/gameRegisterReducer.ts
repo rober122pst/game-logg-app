@@ -17,8 +17,6 @@ export interface RegisterState {
         id: GameObjective;
         name: string;
     };
-    difficulty?: GameDifficulty;
-    favorite?: boolean;
 }
 
 // prettier-ignore
@@ -39,14 +37,6 @@ export type RegisterAction =
         type: 'SET_OBJECTIVE';
         value: { id: GameObjective, name: string };
     }
-    | {
-        type: 'SET_DIFFICULTY';
-        value: GameDifficulty;
-    }
-    | {
-        type: 'SET_FAVORITE';
-        value: boolean;
-    };
 
 export const initializeState: RegisterState = {
     status: 'I_WILL_PLAY',
@@ -104,16 +94,6 @@ export function reducer(state: RegisterState, action: RegisterAction): RegisterS
             return {
                 ...state,
                 objective: action.value,
-            };
-        case 'SET_DIFFICULTY':
-            return {
-                ...state,
-                difficulty: action.value,
-            };
-        case 'SET_FAVORITE':
-            return {
-                ...state,
-                favorite: !action.value,
             };
         default:
             return state;

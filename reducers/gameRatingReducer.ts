@@ -1,23 +1,31 @@
+import { GameDifficulty } from './gameRegisterReducer';
+
 export interface GameRatingState {
     graphics: number;
     gameplay: number;
     story: number;
     sound: number;
     overall: number;
-    comments: string;
+    favorite: boolean;
+    difficulty: GameDifficulty;
+    comment: string;
 }
 
 export type GameRatingAction =
     | { type: 'SET_SCORE'; payload: { category: keyof GameRatingState; score: number } }
-    | { type: 'SET_COMMENTS'; value: string };
+    | { type: 'SET_COMMENT'; value: string }
+    | { type: 'SET_FAVORITE' }
+    | { type: 'SET_DIFFICULTY'; value: GameDifficulty };
 
 export const initialGameRatingState: GameRatingState = {
-    graphics: 0,
-    gameplay: 0,
-    story: 0,
-    sound: 0,
-    overall: 0,
-    comments: '',
+    graphics: 7,
+    gameplay: 7,
+    story: 7,
+    sound: 7,
+    overall: 7,
+    favorite: false,
+    difficulty: 'B',
+    comment: '',
 };
 
 export function gameRatingReducer(state: GameRatingState, action: GameRatingAction): GameRatingState {
@@ -36,10 +44,20 @@ export function gameRatingReducer(state: GameRatingState, action: GameRatingActi
                 overall,
             };
         }
-        case 'SET_COMMENTS':
+        case 'SET_COMMENT':
             return {
                 ...state,
-                comments: action.value,
+                comment: action.value,
+            };
+        case 'SET_DIFFICULTY':
+            return {
+                ...state,
+                difficulty: action.value,
+            };
+        case 'SET_FAVORITE':
+            return {
+                ...state,
+                favorite: !state.favorite,
             };
         default:
             return state;

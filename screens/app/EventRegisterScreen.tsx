@@ -56,7 +56,7 @@ export default function EventRegisterScreen() {
         },
     ];
 
-    const { data: addedGame, mutate, isPending, error } = useAddUserGame();
+    const { data: addedGame, mutate: addUserGame, isPending, error } = useAddUserGame();
     const navigation = useNavigationCustom<'UserGameRegister'>();
 
     const [page, setPage] = useState(0);
@@ -67,17 +67,17 @@ export default function EventRegisterScreen() {
             game={game}
             state={registerForm}
             dispatch={registerDispatch}
-            onShowPicker={() => setShowPicker(true)}
             onShowObjectivePicker={() => setObjectiveShowPicker(true)}
         />,
-        <GameRegisterPageTwo key="page2" state={eventForm} dispatch={eventDispatch} onNext={() => setPage(2)} />,
-        <RatingGameForm
-            key="page3"
-            register={registerForm}
-            registerDispatch={registerDispatch}
-            ratingState={ratingForm}
-            ratingDispatch={ratingDispatch}
+        <GameRegisterPageTwo
+            key="page2"
+            state={eventForm}
+            dispatch={eventDispatch}
+            platformName={eventForm.platform}
+            onShowPicker={() => setShowPicker(true)}
+            onNext={() => setPage(2)}
         />,
+        <RatingGameForm key="page3" state={ratingForm} dispatch={ratingDispatch} />,
     ];
 
     const onSubmit = () => {
@@ -104,29 +104,22 @@ export default function EventRegisterScreen() {
 
         // console.log(data.beatEvents);
 
-        if (registerForm.status !== 'BEAT') {
-            const data: AddUserGame = {
-                gameId: game.id,
-                platformsIds: [registerForm.platform.id],
-                status: registerForm.status,
-                price: registerForm.price ? Number(registerForm.price) : undefined,
-                objective: registerForm.objective.id,
-            };
+        const data: AddUserGame = {
+            gameId: game.id,
+            platformsIds: [registerForm.platform.id],
+            status: registerForm.status,
+            price: registerForm.price ? Number(registerForm.price) : undefined,
+            objective: registerForm.objective.id,
+        };
 
-            mutate(data, {
-                onSuccess: () => {
-                    console.log(addedGame);
-                    navigation.navigate('Home');
-                },
-            });
-        } else {
-            switch (page) {
-                case 0:
-                    setPage(1);
-                    break;
-                default:
-                    break;
-            }
+        addUserGame(data, {
+            onSuccess: () => {
+                console.log(addedGame);
+                navigation.navigate('Home');
+            },
+        });
+
+        if (registerForm.status === 'BEAT') {
         }
     };
 
@@ -134,7 +127,7 @@ export default function EventRegisterScreen() {
         <View className="flex-1 bg-background-surface">
             <KeyboardProvider>
                 <KeyboardAwareScrollView
-                    className="my-6 px-12"
+                    className="mt-6 px-12"
                     extraScrollHeight={footerHeight + 32}
                     extraHeight={footerHeight + 67}
                     enableOnAndroid={true}
@@ -142,131 +135,10 @@ export default function EventRegisterScreen() {
                 >
                     <View className="border-b border-background-surface-secondary pb-10">{pages[page]}</View>
                     <Pressable>
-                        <Text className="mt-4 text-center font-metropolis-light text-xs text-raspberry underline">
+                        <Text className="my-4 text-center font-metropolis-light text-xs text-raspberry underline">
                             Dúvidas com o preenchimento? Aperte aqui!
                         </Text>
                     </Pressable>
-                    {/* {registerForm.status !== 'PLAYING' && registerForm.status !== 'DROPPED' && (
-                        <View className="my-6">
-                            <SectionTitle>Informações do Evento</SectionTitle>
-                            <View className="mb-4">
-                                <Text className="mb-2 font-metropolis text-text-secondary">
-                                    Precisão de Data do Evento
-                                </Text>
-                                <View className="flex-row items-center gap-4">
-                                    {(['HOUR', 'DAY', 'MONTH', 'YEAR'] as const).map((option) => {
-                                        const labelOption = {
-                                            HOUR: 'Hora',
-                                            DAY: 'Dia',
-                                            MONTH: 'Mês',
-                                            YEAR: 'Ano',
-                                        };
-
-                                        return (
-                                            <RadioInput
-                                                key={option}
-                                                selected={eventForm.precision === option}
-                                                onPress={() => eventDispatch({ type: 'SET_PRECISION', value: option })}
-                                            >
-                                                <Text className="text-center font-metropolis text-text-primary">
-                                                    {labelOption[option]}
-                                                </Text>
-                                            </RadioInput>
-                                        );
-                                    })}
-                                </View>
-                                <View className="w-full flex-row gap-5">
-                                    {eventForm.precision === 'HOUR' && (
-                                        <View className="mt-4 flex-1">
-                                            <Text className="mb-2 font-metropolis text-text-secondary">Hora</Text>
-                                            <TextInput
-                                                className="rounded-lg bg-background-surface-secondary p-4 text-text-primary"
-                                                placeholderTextColor={tailwindColors['text-secondary'].dark}
-                                                value={eventForm.hour}
-                                                maxLength={5}
-                                                keyboardType="numeric"
-                                                placeholder="HH:mm"
-                                                onChangeText={(value) => eventDispatch({ type: 'SET_HOUR', value })}
-                                            />
-                                        </View>
-                                    )}
-                                    <View className="mt-4 flex-1">
-                                        <Text className="mb-2 font-metropolis text-text-secondary">Data</Text>
-                                        <TextInput
-                                            className="rounded-lg bg-background-surface-secondary p-4 text-text-primary"
-                                            placeholderTextColor={tailwindColors['text-secondary'].dark}
-                                            value={eventForm.date}
-                                            maxLength={formDate[eventForm.precision].length}
-                                            keyboardType="numeric"
-                                            placeholder={formDate[eventForm.precision].placeholder}
-                                            onChangeText={(value) => eventDispatch({ type: 'SET_DATE', value })}
-                                        />
-                                    </View>
-                                </View>
-                                {eventForm.error && (
-                                    <Text className="mt-2 font-metropolis text-red-500">{eventForm.error}</Text>
-                                )}
-                            </View>
-                            <View className="mb-2">
-                                <Text className="mb-2 font-metropolis text-text-secondary">Dificuldade</Text>
-                                <View className="flex-row items-center gap-4">
-                                    {(['D', 'C', 'B', 'A', 'S', 'SS'] as const).map((diff) => (
-                                        <RadioInput
-                                            key={diff}
-                                            selected={registerForm.difficulty === diff}
-                                            onPress={() => registerDispatch({ type: 'SET_DIFFICULTY', value: diff })}
-                                        >
-                                            <Text className="text-center font-metropolis text-text-primary">
-                                                {diff === 'SS' ? 'S+' : diff}
-                                            </Text>
-                                        </RadioInput>
-                                    ))}
-                                </View>
-                            </View>
-                            <View className="flex-row gap-4">
-                                <View className="mt-2 flex-1">
-                                    <Text className="mb-2 font-metropolis text-text-secondary">Tempo Jogado (h)</Text>
-                                    <TextInput
-                                        className="rounded-lg bg-background-surface-secondary p-4 text-text-primary"
-                                        placeholderTextColor={tailwindColors['text-secondary'].dark}
-                                        value={eventForm.timeToEvent}
-                                        maxLength={5}
-                                        keyboardType="numeric"
-                                        placeholder="Ex: 45"
-                                        onChangeText={(value) => eventDispatch({ type: 'SET_PLAYTIME', value })}
-                                    />
-                                </View>
-                                <View className="mt-2 flex-1">
-                                    <View className="mb-7" />
-                                    <RadioInput
-                                        onPress={() => registerDispatch({ type: 'SET_FAVORITE' })}
-                                        selected={registerForm.favorite}
-                                    >
-                                        <View className="flex-row gap-2 px-2">
-                                            <Heart
-                                                color={
-                                                    registerForm.favorite
-                                                        ? tailwindColors.raspberry
-                                                        : tailwindColors['text-secondary'].dark
-                                                }
-                                                fill={registerForm.favorite ? tailwindColors.raspberry : '#ffffff00'}
-                                                size={19}
-                                            />
-                                            <Text
-                                                className={
-                                                    registerForm.favorite
-                                                        ? 'font-metropolis-semi-bold text-raspberry'
-                                                        : 'font-metropolis text-text-secondary'
-                                                }
-                                            >
-                                                Favorito
-                                            </Text>
-                                        </View>
-                                    </RadioInput>
-                                </View>
-                            </View>
-                        </View>
-                    )} */}
                     {error && <Text className="text-center font-metropolis text-cocoa-brown">{error.message}</Text>}
                 </KeyboardAwareScrollView>
                 <KeyboardStickyView
@@ -276,7 +148,7 @@ export default function EventRegisterScreen() {
                     <CustomButton
                         onPress={onSubmit}
                         disabled={isPending}
-                        title={registerForm.status === 'BEAT' ? 'Registrar Evento ➡️' : 'Loggar Jogo'}
+                        title={registerForm.status === 'BEAT' ? 'Registrar Evento' : 'Loggar Jogo'}
                     />
                 </KeyboardStickyView>
             </KeyboardProvider>
