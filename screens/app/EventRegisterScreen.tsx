@@ -1,5 +1,5 @@
 import { GameRegisterPageOne, GameRegisterPageTwo, RatingGameForm } from '@/components/GameRegisterPages';
-import { AddUserGame, useAddUserGame } from '@/hooks/userGamesHooks';
+import { AddGameEvent, useAddBeatEvent, useAddUserGame } from '@/hooks/userGamesHooks';
 import { initializeState as eventInitialState, reducer as eventReducer } from '@/reducers/gameEventReducer';
 import { gameRatingReducer, initialGameRatingState } from '@/reducers/gameRatingReducer';
 import {
@@ -8,7 +8,7 @@ import {
     reducer as registerReducer,
 } from '@/reducers/gameRegisterReducer';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { useReducer, useState } from 'react';
+import { useReducer, useRef, useState } from 'react';
 import { LayoutChangeEvent, Pressable, Text, View } from 'react-native';
 import { KeyboardProvider, KeyboardStickyView } from 'react-native-keyboard-controller';
 
@@ -56,10 +56,13 @@ export default function EventRegisterScreen() {
         },
     ];
 
-    const { data: addedGame, mutate: addUserGame, isPending, error } = useAddUserGame();
+    const { data: newUserGame, mutate: addUserGame, isPending, error } = useAddUserGame();
+    const { mutate: addBeatEvent } = useAddBeatEvent();
     const navigation = useNavigationCustom<'UserGameRegister'>();
 
     const [page, setPage] = useState(0);
+    const [status, setStatus] = useState(0);
+    const submitPageRef = useRef<() => unknown>(() => { });
 
     const pages = [
         <GameRegisterPageOne
@@ -68,59 +71,34 @@ export default function EventRegisterScreen() {
             state={registerForm}
             dispatch={registerDispatch}
             onShowObjectivePicker={() => setObjectiveShowPicker(true)}
+            onSubmit={(func) => (submitPageRef.current = func)}
         />,
         <GameRegisterPageTwo
             key="page2"
             state={eventForm}
             dispatch={eventDispatch}
-            platformName={eventForm.platform}
+            platformName={eventForm.platform.name}
             onShowPicker={() => setShowPicker(true)}
             onNext={() => setPage(2)}
         />,
         <RatingGameForm key="page3" state={ratingForm} dispatch={ratingDispatch} />,
     ];
 
-    const onSubmit = () => {
-        // const data: AddUserGame = {
-        //     gameId: game.id,
-        //     platformsIds: [registerForm.platform.id],
-
-        //     status: registerForm.status,
-        //     favorite: registerForm.favorite,
-        //     difficulty: registerForm.difficulty,
-        //     beatEvents: [],
-        // };
-
-        // if (registerForm.status !== 'PLAYING' && registerForm.status !== 'DROPPED') {
-        //     data.beatEvents.push({
-        //         action: registerForm.status, // No caso desse formulário, pode vim do registro mesmo já que é o primeiro,
-        //         platformId: registerForm.platform.id, // No caso desse formulário, pode vim do registro mesmo já que é o primeiro.
-        //         precision: eventForm.precision,
-        //         dateInput: eventForm.date,
-        //         hourInput: eventForm.hour,
-        //         timeToEvent: parseInt(eventForm.timeToEvent),
-        //     });
-        // }
-
-        // console.log(data.beatEvents);
-
-        const data: AddUserGame = {
-            gameId: game.id,
-            platformsIds: [registerForm.platform.id],
-            status: registerForm.status,
-            price: registerForm.price ? Number(registerForm.price) : undefined,
-            objective: registerForm.objective.id,
-        };
-
-        addUserGame(data, {
-            onSuccess: () => {
-                console.log(addedGame);
-                navigation.navigate('Home');
-            },
-        });
-
-        if (registerForm.status === 'BEAT') {
+    // prettier-ignore
+    const postEvent: AddGameEvent | undefined = newUserGame
+        ? {
+            ...eventForm,
+            initialPlaytime: eventForm.initialPlaytime ? Number(eventForm.initialPlaytime) : undefined,
+            timeToEvent: eventForm.timeToEvent ? Number(eventForm.timeToEvent) : undefined,
+            platformId: eventForm.platform.id,
+            dateInput: eventForm.date,
+            hourInput: eventForm.hour,
+            userGameId: newUserGame.data.id,
         }
+        : undefined;
+
+    const onSubmit = () => {
+        submitPageRef.current?.();
     };
 
     return (
@@ -148,14 +126,14 @@ export default function EventRegisterScreen() {
                     <CustomButton
                         onPress={onSubmit}
                         disabled={isPending}
-                        title={registerForm.status === 'BEAT' ? 'Registrar Evento' : 'Loggar Jogo'}
+                        title={registerForm.status === 'BEAT_EVENT' ? 'Registrar Evento' : 'Loggar Jogo'}
                     />
                 </KeyboardStickyView>
             </KeyboardProvider>
             {showPicker && (
                 <PickerScreen
                     items={game.platforms}
-                    onSelect={(id, name) => registerDispatch({ type: 'SET_PLATFORM', value: { id, name } })}
+                    onSelect={(id, name) => eventDispatch({ type: 'SET_PLATFORM', value: { id, name } })}
                     onDestroy={() => setShowPicker(false)}
                 />
             )}

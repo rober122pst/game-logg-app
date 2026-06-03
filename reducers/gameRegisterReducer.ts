@@ -2,16 +2,12 @@ import { GameAction } from './gameEventReducer';
 
 export type GameDifficulty = 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
 
-export type GameStatus = 'PLAYING' | 'I_WILL_PLAY' | 'BEAT' | 'DROPPED';
+export type GameStatus = 'PLAYING' | 'I_WILL_PLAY' | 'BEAT_EVENT' | 'BEATED' | 'DROPPED';
 
 export type GameObjective = GameAction;
 
 export interface RegisterState {
     status: GameStatus;
-    platform: {
-        id: string;
-        name: string;
-    };
     price: string;
     objective: {
         id: GameObjective;
@@ -26,10 +22,6 @@ export type RegisterAction =
         value: GameStatus;
     }
     | {
-        type: 'SET_PLATFORM';
-        value: { id: string, name: string };
-    }
-    | {
         type: 'SET_PRICE';
         value: string;
     }
@@ -40,7 +32,6 @@ export type RegisterAction =
 
 export const initializeState: RegisterState = {
     status: 'I_WILL_PLAY',
-    platform: { id: '', name: '' },
     price: '',
     objective: {
         id: 'BEATED',
@@ -76,11 +67,6 @@ export function reducer(state: RegisterState, action: RegisterAction): RegisterS
             return {
                 ...state,
                 status: action.value,
-            };
-        case 'SET_PLATFORM':
-            return {
-                ...state,
-                platform: action.value,
             };
         case 'SET_PRICE': {
             const formatedValue = formatPrice(action.value);

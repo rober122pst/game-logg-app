@@ -1,3 +1,4 @@
+import { AddUserGame, useAddUserGame } from '@/hooks/userGamesHooks';
 import { EventAction, EventState, GameAction } from '@/reducers/gameEventReducer';
 import { GameRatingAction, GameRatingState } from '@/reducers/gameRatingReducer';
 import { GameStatus, RegisterAction, RegisterState } from '@/reducers/gameRegisterReducer';
@@ -12,6 +13,7 @@ import {
     Star,
     Trophy,
 } from 'lucide-react-native';
+import { useCallback, useEffect } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { FormInputText, PickerSelect } from './ui/Forms';
 
@@ -19,7 +21,6 @@ import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { ratingColor } from '@/services/ratingColor';
 import { GameType } from '@/types';
 import { Slider } from '@miblanchard/react-native-slider';
-import { useEffect } from 'react';
 import { CustomButton } from './ui/CustomButton';
 import RadioInput from './ui/RadioInput';
 import { SectionTitle } from './ui/SectionTitle';
@@ -29,14 +30,36 @@ interface PageOneProps {
     state: RegisterState;
     dispatch: React.Dispatch<RegisterAction>;
     onShowObjectivePicker: () => void;
+    onSubmit: (func: () => void) => void;
 }
 
-export function GameRegisterPageOne({ game, state, dispatch, onShowObjectivePicker }: PageOneProps) {
+export function GameRegisterPageOne({ game, state, dispatch, onShowObjectivePicker, onSubmit }: PageOneProps) {
+    const { data, mutate, isPending, error } = useAddUserGame();
+
     type statusOptionsType = {
         type: GameStatus;
         icon: React.ForwardRefExoticComponent<LucideProps & React.RefAttributes<SVGSVGElement>>;
         label: 'Jogando' | 'Irei Jogar' | 'Dropei' | 'Já Joguei';
     };
+
+    const handlerSubmit = useCallback(() => {
+        const requestData: AddUserGame = {
+            gameId: game.id,
+            status: state.status === 'BEAT_EVENT' ? 'BEATED' : state.status,
+            price: state.price ? Number(state.price) : undefined,
+            objective: state.objective.id,
+        };
+
+        mutate(requestData);
+
+        console.log(requestData);
+
+        return { data, isPending, error };
+    }, [game.id, mutate, state, data, isPending, error]);
+
+    useEffect(() => {
+        onSubmit(handlerSubmit);
+    }, [handlerSubmit, onSubmit]);
 
     const statusOptions: statusOptionsType[] = [
         {
@@ -50,7 +73,7 @@ export function GameRegisterPageOne({ game, state, dispatch, onShowObjectivePick
             label: 'Jogando',
         },
         {
-            type: 'BEAT',
+            type: 'BEAT_EVENT',
             icon: CheckCircle2,
             label: 'Já Joguei',
         },
@@ -62,12 +85,6 @@ export function GameRegisterPageOne({ game, state, dispatch, onShowObjectivePick
     ];
 
     const tailwindColors = useTailwindColors();
-
-    useEffect(() => {
-        dispatch({ type: 'SET_PLATFORM', value: { id: game.platforms[0].id, name: game.platforms[0].name } });
-        dispatch({ type: 'SET_OBJECTIVE', value: { id: 'BEATED', name: 'Zerar o jogo' } });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     const StatusOption = (item: statusOptionsType) => {
         const Icon = item.icon;

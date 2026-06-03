@@ -1,14 +1,21 @@
+import { AddGameEvent } from '@/hooks/userGamesHooks';
+
 export type DatePrecision = 'HOUR' | 'DAY' | 'MONTH' | 'YEAR';
 export type GameAction = 'BEATED' | 'COMPLETED' | 'PLATINUM' | 'PERFECT';
 
 export interface EventState {
     precision: DatePrecision;
     action: GameAction;
-    platform: '';
+    platform: {
+        id: string;
+        name: string;
+    };
+    initialPlaytime: string;
     date: string;
     hour: string;
     timeToEvent: string;
     error?: string;
+    payload?: AddGameEvent;
 }
 
 // prettier-ignore
@@ -22,14 +29,25 @@ export type EventAction =
         value: GameAction;
     }
     | {
-        type: 'SET_DATE' | 'SET_HOUR' | 'SET_PLAYTIME';
+        type: 'SET_DATE' | 'SET_HOUR' | 'SET_PLAYTIME' | 'SET_TOTAL_PLAYTIME';
         value: string;
+    }
+    | {
+        type: 'SET_PLATFORM';
+        value: { id: string, name: string };
+    }
+    | {
+        type: 'SET_PAYLOAD';
     };
 
 export const initializeState: EventState = {
     precision: 'YEAR',
     action: 'BEATED',
-    platform: '',
+    platform: {
+        id: '',
+        name: '',
+    },
+    initialPlaytime: '',
     date: '',
     hour: '',
     timeToEvent: '',
@@ -220,6 +238,17 @@ export function reducer(state: EventState, action: EventAction): EventState {
                 ...state,
                 timeToEvent: action.value,
             };
+        case 'SET_TOTAL_PLAYTIME':
+            return {
+                ...state,
+                initialPlaytime: action.value,
+            };
+        case 'SET_PLATFORM':
+            return {
+                ...state,
+                platform: action.value,
+            };
+
         default:
             return state;
     }

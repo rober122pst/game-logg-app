@@ -1,14 +1,14 @@
 import { DatePrecision, GameAction } from '@/reducers/gameEventReducer';
 import { GameObjective, GameStatus } from '@/reducers/gameRegisterReducer';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { api } from '@/services/api';
 import { useUserStore } from '@/store/useUserStore';
 import { UserGameType } from '@/types';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export type AddUserGame = {
     status: GameStatus;
     gameId: string;
-    platformsIds: string[];
     price?: number;
     objective: GameObjective;
 };
@@ -46,10 +46,11 @@ export function useUserGames(params?: { gameId?: string; favorite?: boolean; sta
     });
 }
 
-type AddGameEvent = {
+export type AddGameEvent = {
+    userGameId: string;
     action: GameAction;
     platformId: string;
-
+    initialPlaytime?: number;
     dateInput?: string | null;
     hourInput?: string | null;
     precision: DatePrecision;
