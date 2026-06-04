@@ -66,6 +66,16 @@ function formatPrice(value: string): string {
     return integer;
 }
 
+export function validateRegisterState(state: RegisterState): string | null {
+    if (state.price) {
+        const parsed = Number(state.price);
+        if (isNaN(parsed) || parsed < 0) {
+            return 'Preço inválido.';
+        }
+    }
+    return null;
+}
+
 export function reducer(state: RegisterState, action: RegisterAction): RegisterState {
     switch (action.type) {
         case 'SET_STATUS':

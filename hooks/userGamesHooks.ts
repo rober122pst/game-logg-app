@@ -19,7 +19,7 @@ export function useAddUserGame() {
 
     return useMutation({
         mutationFn: async (data: AddUserGame) => {
-            return await api.post<UserGameType>(`/users/${userId}/games`, data);
+            return await api.post<UserGameType>('/users/me/games', data);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['userGames', userId] });

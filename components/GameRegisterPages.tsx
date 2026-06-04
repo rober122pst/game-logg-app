@@ -6,9 +6,9 @@ import {
     useAddRating,
     useAddUserGame,
 } from '@/hooks/userGamesHooks';
-import { EventAction, EventState, GameAction } from '@/reducers/gameEventReducer';
+import { EventAction, EventState, GameAction, validateEventState } from '@/reducers/gameEventReducer';
 import { GameRatingAction, GameRatingState } from '@/reducers/gameRatingReducer';
-import { GameStatus, RegisterAction, RegisterState } from '@/reducers/gameRegisterReducer';
+import { GameStatus, RegisterAction, RegisterState, validateRegisterState } from '@/reducers/gameRegisterReducer';
 import {
     CheckCircle2,
     Gamepad,
@@ -20,7 +20,7 @@ import {
     Star,
     Trophy,
 } from 'lucide-react-native';
-import { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { FormInputText, PickerSelect } from './ui/Forms';
 
@@ -28,88 +28,163 @@ import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { ratingColor } from '@/services/ratingColor';
 import { GameType } from '@/types';
 import { Slider } from '@miblanchard/react-native-slider';
+import { AxiosError } from 'axios';
 import RadioInput from './ui/RadioInput';
 import { SectionTitle } from './ui/SectionTitle';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type StatusOptionItem<T extends string> = {
+    type: T;
+    icon: React.ForwardRefExoticComponent<LucideProps & React.RefAttributes<SVGSVGElement>>;
+    label: string;
+};
+
+// ─── Module-level constants ───────────────────────────────────────────────────
+
+const registerStatusOptions: StatusOptionItem<GameStatus>[] = [
+    { type: 'I_WILL_PLAY', icon: Gamepad, label: 'Irei Jogar' },
+    { type: 'PLAYING', icon: Gamepad2, label: 'Jogando' },
+    { type: 'BEAT_EVENT', icon: CheckCircle2, label: 'Já Joguei' },
+    { type: 'DROPPED', icon: HeartOff, label: 'Dropei' },
+];
+
+const eventStatusOptions: StatusOptionItem<GameAction>[] = [
+    { type: 'BEATED', icon: CheckCircle2, label: 'Zerado' },
+    { type: 'COMPLETED', icon: Percent, label: '100%' },
+    { type: 'PLATINUM', icon: Trophy, label: 'Platinado' },
+    { type: 'PERFECT', icon: Star, label: 'Jogo Perfeito' },
+];
+
+const formDateConfig = {
+    HOUR: { length: 10, placeholder: 'DD/MM/AAAA' },
+    DAY: { length: 10, placeholder: 'DD/MM/AAAA' },
+    MONTH: { length: 7, placeholder: 'MM/AAAA' },
+    YEAR: { length: 4, placeholder: 'AAAA' },
+} as const;
+
+const datePrecisionLabels = {
+    HOUR: 'Hora',
+    DAY: 'Dia',
+    MONTH: 'Mês',
+    YEAR: 'Ano',
+} as const;
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getApiErrorMessage(error: unknown): string {
+    if (error instanceof AxiosError) {
+        return error.response?.data?.message ?? 'Erro ao realizar a requisição.';
+    }
+    return 'Erro inesperado. Tente novamente.';
+}
+
+// ─── Shared sub-components ────────────────────────────────────────────────────
+
+type StatusOptionProps = {
+    item: StatusOptionItem<string>;
+    selected: boolean;
+    onPress: () => void;
+    activeColor: string;
+};
+
+const StatusOption = React.memo(({ item, selected, onPress, activeColor }: StatusOptionProps) => {
+    const Icon = item.icon;
+    return (
+        <RadioInput selected={selected} onPress={onPress}>
+            <View className="flex-row items-center gap-2 px-2">
+                <Icon size={20} color={selected ? activeColor : '#787878'} />
+                <Text className="font-metropolis text-text-primary">{item.label}</Text>
+            </View>
+        </RadioInput>
+    );
+});
+
+type SliderRatingProps = {
+    label: string;
+    value: number;
+    category: keyof GameRatingState;
+    dispatch: React.Dispatch<GameRatingAction>;
+};
+
+const SliderRating = React.memo(({ label, value, category, dispatch }: SliderRatingProps) => {
+    const tailwindColors = useTailwindColors();
+
+    return (
+        <View>
+            <View className="flex-row items-center justify-between gap-2">
+                <Text className="font-metropolis-light text-lg text-text-secondary">{label}</Text>
+                <Text className="font-metropolis-semi-bold text-lg text-text-primary">{value.toFixed(1)}</Text>
+            </View>
+            <Slider
+                maximumTrackTintColor={tailwindColors['background-surface'].dark}
+                minimumTrackTintColor={tailwindColors.raspberry}
+                trackStyle={{ height: 8, borderRadius: 99999 }}
+                thumbStyle={{ height: 18, width: 18 }}
+                thumbTintColor={tailwindColors.raspberry}
+                value={value}
+                onValueChange={(val) =>
+                    dispatch({
+                        type: 'SET_SCORE',
+                        payload: { category, score: val[0] },
+                    })
+                }
+                minimumValue={0}
+                maximumValue={10}
+                step={0.5}
+            />
+        </View>
+    );
+});
+
+// ─── Page One ─────────────────────────────────────────────────────────────────
 
 interface PageOneProps {
     game: GameType;
     state: RegisterState;
     dispatch: React.Dispatch<RegisterAction>;
     onShowObjectivePicker: () => void;
-    onSubmit: (func: () => void) => void;
+    onSubmit: (func: () => Promise<boolean>) => void;
 }
 
 export function GameRegisterPageOne({ game, state, dispatch, onShowObjectivePicker, onSubmit }: PageOneProps) {
-    const { data, mutate, isPending, error } = useAddUserGame();
-
-    type statusOptionsType = {
-        type: GameStatus;
-        icon: React.ForwardRefExoticComponent<LucideProps & React.RefAttributes<SVGSVGElement>>;
-        label: 'Jogando' | 'Irei Jogar' | 'Dropei' | 'Já Joguei';
-    };
-
-    const handlerSubmit = useCallback(() => {
-        const requestData: AddUserGame = {
-            gameId: game.id,
-            status: state.status === 'BEAT_EVENT' ? 'BEATED' : state.status,
-            price: state.price ? Number(state.price) : undefined,
-            objective: state.objective.id,
-        };
-
-        mutate(requestData);
-
-        dispatch({ type: 'SET_USERGAME_ID', value: data?.data.id });
-
-        return { data, isPending, error };
-    }, [game.id, mutate, dispatch, state, data, isPending, error]);
-
-    useEffect(() => {
-        onSubmit(handlerSubmit);
-    }, [handlerSubmit, onSubmit]);
+    const { mutateAsync, error } = useAddUserGame();
+    const tailwindColors = useTailwindColors();
+    const [validationError, setValidationError] = useState<string | null>(null);
 
     useEffect(() => {
         dispatch({ type: 'SET_OBJECTIVE', value: { id: 'BEATED', name: 'Zerar o jogo' } });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const statusOptions: statusOptionsType[] = [
-        {
-            type: 'I_WILL_PLAY',
-            icon: Gamepad,
-            label: 'Irei Jogar',
-        },
-        {
-            type: 'PLAYING',
-            icon: Gamepad2,
-            label: 'Jogando',
-        },
-        {
-            type: 'BEAT_EVENT',
-            icon: CheckCircle2,
-            label: 'Já Joguei',
-        },
-        {
-            type: 'DROPPED',
-            icon: HeartOff,
-            label: 'Dropei',
-        },
-    ];
+    const handlerSubmit = useCallback(async (): Promise<boolean> => {
+        const fieldError = validateRegisterState(state);
+        if (fieldError) {
+            setValidationError(fieldError);
+            return false;
+        }
+        setValidationError(null);
 
-    const tailwindColors = useTailwindColors();
+        try {
+            const requestData: AddUserGame = {
+                gameId: game.id,
+                status: state.status === 'BEAT_EVENT' ? 'BEATED' : state.status,
+                price: state.price ? Number(state.price) : undefined,
+                objective: state.objective.id,
+            };
+            const response = await mutateAsync(requestData);
+            dispatch({ type: 'SET_USERGAME_ID', value: response.data.id });
+            return true;
+        } catch {
+            return false;
+        }
+    }, [game.id, mutateAsync, dispatch, state]);
 
-    const StatusOption = (item: statusOptionsType) => {
-        const Icon = item.icon;
-        const selected = state.status === item.type;
+    useEffect(() => {
+        onSubmit(handlerSubmit);
+    }, [handlerSubmit, onSubmit]);
 
-        return (
-            <RadioInput selected={selected} onPress={() => dispatch({ type: 'SET_STATUS', value: item.type })}>
-                <View className="flex-row items-center gap-2 px-2">
-                    <Icon size={20} color={selected ? tailwindColors.raspberry : '#787878'} />
-                    <Text className="font-metropolis text-text-primary">{item.label}</Text>
-                </View>
-            </RadioInput>
-        );
-    };
+    const displayError = validationError ?? (error ? getApiErrorMessage(error) : null);
 
     return (
         <>
@@ -117,14 +192,19 @@ export function GameRegisterPageOne({ game, state, dispatch, onShowObjectivePick
                 <SectionTitle>Status do Jogo</SectionTitle>
                 <FlatList
                     className="w-full"
-                    data={statusOptions}
-                    renderItem={({ item }) => <StatusOption {...item} />}
+                    data={registerStatusOptions}
+                    renderItem={({ item }) => (
+                        <StatusOption
+                            item={item}
+                            selected={state.status === item.type}
+                            onPress={() => dispatch({ type: 'SET_STATUS', value: item.type })}
+                            activeColor={tailwindColors.raspberry}
+                        />
+                    )}
                     numColumns={2}
                     keyExtractor={(item) => item.type}
                     columnWrapperClassName="gap-4"
-                    contentContainerStyle={{
-                        gap: 16,
-                    }}
+                    contentContainerStyle={{ gap: 16 }}
                     scrollEnabled={false}
                 />
             </View>
@@ -141,9 +221,14 @@ export function GameRegisterPageOne({ game, state, dispatch, onShowObjectivePick
             <Text className="mt-1.5 font-metropolis-light text-sm text-text-secondary">
                 Caso não saiba ou tenha recebido o jogo de graça, deixe o campo PREÇO em branco.
             </Text>
+            {displayError && (
+                <Text className="mt-2 font-metropolis-light text-sm text-cocoa-brown">{displayError}</Text>
+            )}
         </>
     );
 }
+
+// ─── Page Two ─────────────────────────────────────────────────────────────────
 
 interface PageTwoProps {
     game: GameType;
@@ -151,101 +236,51 @@ interface PageTwoProps {
     dispatch: React.Dispatch<EventAction>;
     userGameId: string | undefined;
     onShowPicker: () => void;
-    onSubmit: (func: () => unknown) => void;
+    onSubmit: (func: () => Promise<boolean>) => void;
 }
 
 export function GameRegisterPageTwo({ game, state, dispatch, userGameId, onShowPicker, onSubmit }: PageTwoProps) {
-    type statusOptionsType = {
-        type: GameAction;
-        icon: React.ForwardRefExoticComponent<LucideProps & React.RefAttributes<SVGSVGElement>>;
-        label: string;
-    };
-
-    const { data, mutate, isPending, error } = useAddBeatEvent();
-
-    const handlerSubmit = useCallback(() => {
-        if (!userGameId) return;
-        const requestData: AddGameEvent = {
-            action: state.action,
-            precision: state.precision,
-            initialPlaytime: state.initialPlaytime ? Number(state.initialPlaytime) : undefined,
-            timeToEvent: state.timeToEvent ? Number(state.timeToEvent) : undefined,
-            platformId: state.platform.id,
-            dateInput: state.date,
-            hourInput: state.hour,
-            userGameId: userGameId,
-        };
-
-        mutate(requestData);
-
-        return { data, isPending, error };
-    }, [data, error, isPending, mutate, state, userGameId]);
-
-    useEffect(() => {
-        onSubmit(handlerSubmit);
-    }, [handlerSubmit, onSubmit]);
+    const { mutateAsync, error } = useAddBeatEvent();
+    const tailwindColors = useTailwindColors();
+    const [validationError, setValidationError] = useState<string | null>(null);
 
     useEffect(() => {
         dispatch({ type: 'SET_PLATFORM', value: { id: game.platforms[0].id, name: game.platforms[0].name } });
     }, [dispatch, game.platforms]);
 
-    const tailwindColors = useTailwindColors();
+    const handlerSubmit = useCallback(async (): Promise<boolean> => {
+        if (!userGameId) return false;
 
-    const statusOptions: statusOptionsType[] = [
-        {
-            type: 'BEATED',
-            icon: CheckCircle2,
-            label: 'Zerado',
-        },
-        {
-            type: 'COMPLETED',
-            icon: Percent,
-            label: '100%',
-        },
-        {
-            type: 'PLATINUM',
-            icon: Trophy,
-            label: 'Platinado',
-        },
-        {
-            type: 'PERFECT',
-            icon: Star,
-            label: 'Jogo Perfeito',
-        },
-    ];
+        const fieldError = validateEventState(state);
+        if (fieldError) {
+            setValidationError(fieldError);
+            return false;
+        }
+        setValidationError(null);
 
-    const StatusOption = (item: statusOptionsType) => {
-        const Icon = item.icon;
-        const selected = state.action === item.type;
+        try {
+            const requestData: AddGameEvent = {
+                action: state.action,
+                precision: state.precision,
+                initialPlaytime: state.initialPlaytime ? Number(state.initialPlaytime) : undefined,
+                timeToEvent: state.timeToEvent ? Number(state.timeToEvent) : undefined,
+                platformId: state.platform.id,
+                dateInput: state.date,
+                hourInput: state.hour,
+                userGameId,
+            };
+            await mutateAsync(requestData);
+            return true;
+        } catch {
+            return false;
+        }
+    }, [mutateAsync, state, userGameId]);
 
-        return (
-            <RadioInput selected={selected} onPress={() => dispatch({ type: 'SET_STATUS', value: item.type })}>
-                <View className="flex-row items-center gap-2 px-2">
-                    <Icon size={20} color={selected ? tailwindColors.raspberry : '#787878'} />
-                    <Text className="font-metropolis text-text-primary">{item.label}</Text>
-                </View>
-            </RadioInput>
-        );
-    };
+    useEffect(() => {
+        onSubmit(handlerSubmit);
+    }, [handlerSubmit, onSubmit]);
 
-    const formDate = {
-        HOUR: {
-            length: 10,
-            placeholder: 'DD/MM/AAAA',
-        },
-        DAY: {
-            length: 10,
-            placeholder: 'DD/MM/AAAA',
-        },
-        MONTH: {
-            length: 7,
-            placeholder: 'MM/AAAA',
-        },
-        YEAR: {
-            length: 4,
-            placeholder: 'AAAA',
-        },
-    };
+    const displayError = validationError ?? (error ? getApiErrorMessage(error) : null);
 
     return (
         <>
@@ -253,19 +288,30 @@ export function GameRegisterPageTwo({ game, state, dispatch, userGameId, onShowP
                 <SectionTitle>Registro do Evento</SectionTitle>
                 <FlatList
                     className="w-full"
-                    data={statusOptions}
-                    renderItem={({ item }) => <StatusOption {...item} />}
+                    data={eventStatusOptions}
+                    renderItem={({ item }) => (
+                        <StatusOption
+                            item={item}
+                            selected={state.action === item.type}
+                            onPress={() => dispatch({ type: 'SET_STATUS', value: item.type })}
+                            activeColor={tailwindColors.raspberry}
+                        />
+                    )}
                     numColumns={2}
                     keyExtractor={(item) => item.type}
                     columnWrapperClassName="gap-4"
-                    contentContainerStyle={{
-                        gap: 16,
-                    }}
+                    contentContainerStyle={{ gap: 16 }}
                     scrollEnabled={false}
                 />
             </View>
             <PickerSelect title="Plataforma" value={state.platform.name} onPress={onShowPicker} />
-            <FormInputText label="Total de tempo jogado até agora (h)" placeholder="Ex: 87" keyboardType="numeric" />
+            <FormInputText
+                label="Total de tempo jogado até agora (h)"
+                placeholder="Ex: 87"
+                keyboardType="numeric"
+                value={state.initialPlaytime}
+                onChangeText={(value) => dispatch({ type: 'SET_TOTAL_PLAYTIME', value })}
+            />
             <Text className="mt-1.5 font-metropolis-light text-sm text-text-secondary">
                 Esse valor será registrado como tempo inicial. Você poderá editá-lo depois para colocar o tempo real
                 gasto no jogo.
@@ -273,26 +319,17 @@ export function GameRegisterPageTwo({ game, state, dispatch, userGameId, onShowP
             <View className="mt-4">
                 <Text className="mb-2 font-metropolis text-text-secondary">Precisão de Data do Evento</Text>
                 <View className="flex-row items-center gap-4">
-                    {(['HOUR', 'DAY', 'MONTH', 'YEAR'] as const).map((option) => {
-                        const labelOption = {
-                            HOUR: 'Hora',
-                            DAY: 'Dia',
-                            MONTH: 'Mês',
-                            YEAR: 'Ano',
-                        };
-
-                        return (
-                            <RadioInput
-                                key={option}
-                                selected={state.precision === option}
-                                onPress={() => dispatch({ type: 'SET_PRECISION', value: option })}
-                            >
-                                <Text className="text-center font-metropolis text-text-primary">
-                                    {labelOption[option]}
-                                </Text>
-                            </RadioInput>
-                        );
-                    })}
+                    {(['HOUR', 'DAY', 'MONTH', 'YEAR'] as const).map((option) => (
+                        <RadioInput
+                            key={option}
+                            selected={state.precision === option}
+                            onPress={() => dispatch({ type: 'SET_PRECISION', value: option })}
+                        >
+                            <Text className="text-center font-metropolis text-text-primary">
+                                {datePrecisionLabels[option]}
+                            </Text>
+                        </RadioInput>
+                    ))}
                 </View>
                 <View className="mt-1.5 flex-row items-center gap-4">
                     {state.precision === 'HOUR' && (
@@ -306,8 +343,8 @@ export function GameRegisterPageTwo({ game, state, dispatch, userGameId, onShowP
                     )}
                     <FormInputText
                         label="Data"
-                        placeholder={formDate[state.precision].placeholder}
-                        maxLength={formDate[state.precision].length}
+                        placeholder={formDateConfig[state.precision].placeholder}
+                        maxLength={formDateConfig[state.precision].length}
                         value={state.date}
                         onChangeText={(value) => dispatch({ type: 'SET_DATE', value })}
                         keyboardType="numeric"
@@ -328,81 +365,50 @@ export function GameRegisterPageTwo({ game, state, dispatch, userGameId, onShowP
                 Esse tempo serve para contar o tempo total de jogo até o evento. Ele é útil para calcular a média de
                 tempo gasto por mês, por exemplo. Caso você não saiba ou não queira preencher, deixe em branco.
             </Text>
+            {displayError && <Text className="mt-2 font-metropolis-light text-sm text-red-500">{displayError}</Text>}
         </>
     );
 }
+
+// ─── Rating Form ──────────────────────────────────────────────────────────────
 
 interface RatingGameFormProps {
     userGameId: string | undefined;
     state: GameRatingState;
     dispatch: React.Dispatch<GameRatingAction>;
-    onSubmit: (func: () => unknown) => void;
+    onSubmit: (func: () => Promise<boolean>) => void;
 }
 
-type SliderRatingProps = {
-    label: string;
-    value: number;
-    category: keyof GameRatingState;
-    dispatch: React.Dispatch<GameRatingAction>;
-};
-
-const SliderRating = ({ label, value, category, dispatch }: SliderRatingProps) => {
-    const tailwindColors = useTailwindColors();
-
-    return (
-        <View>
-            <View className="flex-row items-center justify-between gap-2">
-                <Text className="font-metropolis-light text-lg text-text-secondary">{label}</Text>
-                <Text className="font-metropolis-semi-bold text-lg text-text-primary">{value.toFixed(1)}</Text>
-            </View>
-            <Slider
-                maximumTrackTintColor={tailwindColors['background-surface'].dark}
-                minimumTrackTintColor={tailwindColors.raspberry}
-                trackStyle={{ height: 8, borderRadius: 99999 }}
-                thumbStyle={{ height: 18, width: 18 }}
-                thumbTintColor={tailwindColors.raspberry}
-                value={value}
-                onValueChange={(value) =>
-                    dispatch({
-                        type: 'SET_SCORE',
-                        payload: { category: category, score: value[0] },
-                    })
-                }
-                minimumValue={0}
-                maximumValue={10}
-                step={0.5}
-            />
-        </View>
-    );
-};
-
 export function RatingGameForm({ state, dispatch, onSubmit, userGameId }: RatingGameFormProps) {
-    const { data, mutate, isPending, error } = useAddRating();
+    const { mutateAsync, error } = useAddRating();
     const tailwindColors = useTailwindColors();
 
-    const handlerSubmit = useCallback(() => {
-        if (!userGameId) return;
-        const requestData: AddRating = {
-            ...state,
-            scores: {
-                graphics: state.graphics,
-                gameplay: state.gameplay,
-                sound: state.sound,
-                story: state.story,
-            },
-            userGameId: userGameId,
-        };
+    const handlerSubmit = useCallback(async (): Promise<boolean> => {
+        if (!userGameId) return false;
 
-        mutate(requestData);
-
-        console.log(requestData);
-
-        return { data, isPending, error };
-    }, [data, error, isPending, mutate, state, userGameId]);
+        try {
+            const requestData: AddRating = {
+                ...state,
+                scores: {
+                    graphics: state.graphics,
+                    gameplay: state.gameplay,
+                    sound: state.sound,
+                    story: state.story,
+                },
+                userGameId,
+            };
+            await mutateAsync(requestData);
+            return true;
+        } catch {
+            return false;
+        }
+    }, [mutateAsync, state, userGameId]);
 
     useEffect(() => {
         onSubmit(handlerSubmit);
     }, [handlerSubmit, onSubmit]);
+
+    const apiError = error ? getApiErrorMessage(error) : null;
 
     return (
         <>
@@ -472,6 +478,7 @@ export function RatingGameForm({ state, dispatch, onSubmit, userGameId }: Rating
                 onChangeText={(value) => dispatch({ type: 'SET_COMMENT', value })}
                 style={{ minHeight: 100, textAlignVertical: 'top' }}
             />
+            {apiError && <Text className="mt-2 font-metropolis-light text-sm text-red-500">{apiError}</Text>}
         </>
     );
 }

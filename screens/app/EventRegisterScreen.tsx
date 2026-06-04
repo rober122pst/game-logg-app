@@ -7,7 +7,7 @@ import {
     reducer as registerReducer,
 } from '@/reducers/gameRegisterReducer';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { useReducer, useRef, useState } from 'react';
+import { useCallback, useReducer, useRef, useState } from 'react';
 import { LayoutChangeEvent, Pressable, Text, View } from 'react-native';
 import { KeyboardProvider, KeyboardStickyView } from 'react-native-keyboard-controller';
 
@@ -15,51 +15,58 @@ import { CustomButton } from '@/components/ui/CustomButton';
 import PickerScreen from '@/components/ui/PickerScreen';
 import { useNavigationCustom } from '@/hooks/useNavigationCustom';
 import { RootStackParamList } from '@/types';
-import { AxiosResponse } from 'axios';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const objectives: { id: GameObjective; name: string }[] = [
+    { id: 'BEATED', name: 'Zerar o jogo' },
+    { id: 'COMPLETED', name: 'Fazer 100% do mundo' },
+    { id: 'PLATINUM', name: 'Platinar o jogo' },
+    { id: 'PERFECT', name: 'Fazer 100% das conquistas (DLCs inclusas)' },
+];
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function EventRegisterScreen() {
     const route = useRoute<RouteProp<RootStackParamList, 'UserGameRegister'>>();
     const { game } = route.params;
+
     const [registerForm, registerDispatch] = useReducer(registerReducer, registerInitialState);
     const [eventForm, eventDispatch] = useReducer(eventReducer, eventInitialState);
     const [ratingForm, ratingDispatch] = useReducer(gameRatingReducer, initialGameRatingState);
-    const [showPicker, setShowPicker] = useState(false);
-    const [showObjectivePicker, setObjectiveShowPicker] = useState(false);
-
-    const [footerHeight, setFooterHeight] = useState(0);
-    const handleFooterLayout = (e: LayoutChangeEvent) => {
-        setFooterHeight(e.nativeEvent.layout.height);
-    };
-
-    type ObjectivesOptions = {
-        id: GameObjective;
-        name: string;
-    }[];
-
-    const objectives: ObjectivesOptions = [
-        {
-            id: 'BEATED',
-            name: 'Zerar o jogo',
-        },
-        {
-            id: 'COMPLETED',
-            name: 'Fazer 100% do mundo',
-        },
-        {
-            id: 'PLATINUM',
-            name: 'Platinar o jogo',
-        },
-        {
-            id: 'PERFECT',
-            name: 'Fazer 100% das conquistas (DLCs inclusas)',
-        },
-    ];
-    const navigation = useNavigationCustom<'UserGameRegister'>();
 
     const [page, setPage] = useState(0);
-    // eslint-disable-next-line prettier/prettier
-    const submitPageRef = useRef<() => unknown>(() => { });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showPicker, setShowPicker] = useState(false);
+    const [showObjectivePicker, setObjectiveShowPicker] = useState(false);
+    const [footerHeight, setFooterHeight] = useState(0);
+
+    const submitPageRef = useRef<() => Promise<boolean>>(() => Promise.resolve(false));
+
+    const navigation = useNavigationCustom<'UserGameRegister'>();
+
+    const handleFooterLayout = useCallback((e: LayoutChangeEvent) => {
+        setFooterHeight(e.nativeEvent.layout.height);
+    }, []);
+
+    const onSubmit = useCallback(
+        async (goBack: boolean) => {
+            setIsSubmitting(true);
+            try {
+                const success = await submitPageRef.current();
+                if (!success) return;
+                if (goBack) {
+                    navigation.goBack();
+                } else {
+                    setPage((prev) => prev + 1);
+                }
+            } finally {
+                setIsSubmitting(false);
+            }
+        },
+        [navigation]
+    );
 
     const pages = [
         <GameRegisterPageOne
@@ -88,19 +95,6 @@ export default function EventRegisterScreen() {
         />,
     ];
 
-    const onSubmit = (goBack: boolean) => {
-        const res = submitPageRef.current?.();
-
-        if (goBack) {
-            navigation.goBack();
-            return;
-        }
-
-        if ((res as AxiosResponse)?.data?.status === 201) {
-            setPage((prev) => prev + 1);
-        }
-    };
-
     return (
         <View className="flex-1 bg-background-surface">
             <KeyboardProvider>
@@ -127,6 +121,7 @@ export default function EventRegisterScreen() {
                             title={registerForm.status !== 'BEAT_EVENT' ? 'Loggar Jogo' : 'Informações do Evento'}
                             onPress={() => onSubmit(registerForm.status !== 'BEAT_EVENT')}
                             variant={registerForm.status !== 'BEAT_EVENT' ? 'cta' : 'secondary'}
+                            disabled={isSubmitting}
                         />
                     )}
                     {page === 1 && (
@@ -136,11 +131,19 @@ export default function EventRegisterScreen() {
                                 onPress={() => onSubmit(false)}
                                 variant="secondary"
                                 style={{ flex: 1 }}
+                                disabled={isSubmitting}
                             />
-                            <CustomButton title="Loggar Jogo" onPress={() => onSubmit(true)} style={{ flex: 5 }} />
+                            <CustomButton
+                                title="Loggar Jogo"
+                                onPress={() => onSubmit(true)}
+                                style={{ flex: 5 }}
+                                disabled={isSubmitting}
+                            />
                         </View>
                     )}
-                    {page === 2 && <CustomButton title="Avaliar" onPress={() => onSubmit(true)} />}
+                    {page === 2 && (
+                        <CustomButton title="Avaliar" onPress={() => onSubmit(true)} disabled={isSubmitting} />
+                    )}
                 </KeyboardStickyView>
             </KeyboardProvider>
             {showPicker && (

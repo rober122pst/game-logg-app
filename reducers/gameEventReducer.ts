@@ -197,6 +197,14 @@ const hasDatePassed = (value: string, precision: DatePrecision) => {
     }
 };
 
+export function validateEventState(state: EventState): string | null {
+    if (!state.platform.id) return 'Selecione uma plataforma.';
+    if (!state.date) return 'Informe a data do evento.';
+    if (state.error) return state.error;
+    if (state.precision === 'HOUR' && !state.hour) return 'Informe o horário do evento.';
+    return null;
+}
+
 export function reducer(state: EventState, action: EventAction): EventState {
     switch (action.type) {
         case 'SET_STATUS':
