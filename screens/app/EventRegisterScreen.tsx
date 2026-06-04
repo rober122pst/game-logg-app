@@ -1,5 +1,4 @@
 import { GameRegisterPageOne, GameRegisterPageTwo, RatingGameForm } from '@/components/GameRegisterPages';
-import { AddGameEvent, useAddBeatEvent, useAddUserGame } from '@/hooks/userGamesHooks';
 import { initializeState as eventInitialState, reducer as eventReducer } from '@/reducers/gameEventReducer';
 import { gameRatingReducer, initialGameRatingState } from '@/reducers/gameRatingReducer';
 import {
@@ -16,6 +15,7 @@ import { CustomButton } from '@/components/ui/CustomButton';
 import PickerScreen from '@/components/ui/PickerScreen';
 import { useNavigationCustom } from '@/hooks/useNavigationCustom';
 import { RootStackParamList } from '@/types';
+import { AxiosResponse } from 'axios';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function EventRegisterScreen() {
@@ -55,13 +55,10 @@ export default function EventRegisterScreen() {
             name: 'Fazer 100% das conquistas (DLCs inclusas)',
         },
     ];
-
-    const { data: newUserGame, mutate: addUserGame, isPending, error } = useAddUserGame();
-    const { mutate: addBeatEvent } = useAddBeatEvent();
     const navigation = useNavigationCustom<'UserGameRegister'>();
 
     const [page, setPage] = useState(0);
-    const [status, setStatus] = useState(0);
+    // eslint-disable-next-line prettier/prettier
     const submitPageRef = useRef<() => unknown>(() => { });
 
     const pages = [
@@ -75,30 +72,33 @@ export default function EventRegisterScreen() {
         />,
         <GameRegisterPageTwo
             key="page2"
+            game={game}
             state={eventForm}
             dispatch={eventDispatch}
-            platformName={eventForm.platform.name}
+            userGameId={registerForm.userGameId}
             onShowPicker={() => setShowPicker(true)}
-            onNext={() => setPage(2)}
+            onSubmit={(func) => (submitPageRef.current = func)}
         />,
-        <RatingGameForm key="page3" state={ratingForm} dispatch={ratingDispatch} />,
+        <RatingGameForm
+            key="page3"
+            userGameId={registerForm.userGameId}
+            state={ratingForm}
+            dispatch={ratingDispatch}
+            onSubmit={(func) => (submitPageRef.current = func)}
+        />,
     ];
 
-    // prettier-ignore
-    const postEvent: AddGameEvent | undefined = newUserGame
-        ? {
-            ...eventForm,
-            initialPlaytime: eventForm.initialPlaytime ? Number(eventForm.initialPlaytime) : undefined,
-            timeToEvent: eventForm.timeToEvent ? Number(eventForm.timeToEvent) : undefined,
-            platformId: eventForm.platform.id,
-            dateInput: eventForm.date,
-            hourInput: eventForm.hour,
-            userGameId: newUserGame.data.id,
-        }
-        : undefined;
+    const onSubmit = (goBack: boolean) => {
+        const res = submitPageRef.current?.();
 
-    const onSubmit = () => {
-        submitPageRef.current?.();
+        if (goBack) {
+            navigation.goBack();
+            return;
+        }
+
+        if ((res as AxiosResponse)?.data?.status === 201) {
+            setPage((prev) => prev + 1);
+        }
     };
 
     return (
@@ -117,17 +117,30 @@ export default function EventRegisterScreen() {
                             Dúvidas com o preenchimento? Aperte aqui!
                         </Text>
                     </Pressable>
-                    {error && <Text className="text-center font-metropolis text-cocoa-brown">{error.message}</Text>}
                 </KeyboardAwareScrollView>
                 <KeyboardStickyView
                     onLayout={handleFooterLayout}
                     className="w-full border-t border-background-surface-secondary bg-background-surface p-8"
                 >
-                    <CustomButton
-                        onPress={onSubmit}
-                        disabled={isPending}
-                        title={registerForm.status === 'BEAT_EVENT' ? 'Registrar Evento' : 'Loggar Jogo'}
-                    />
+                    {page === 0 && (
+                        <CustomButton
+                            title={registerForm.status !== 'BEAT_EVENT' ? 'Loggar Jogo' : 'Informações do Evento'}
+                            onPress={() => onSubmit(registerForm.status !== 'BEAT_EVENT')}
+                            variant={registerForm.status !== 'BEAT_EVENT' ? 'cta' : 'secondary'}
+                        />
+                    )}
+                    {page === 1 && (
+                        <View className="flex-row gap-4">
+                            <CustomButton
+                                title="Avaliar"
+                                onPress={() => onSubmit(false)}
+                                variant="secondary"
+                                style={{ flex: 1 }}
+                            />
+                            <CustomButton title="Loggar Jogo" onPress={() => onSubmit(true)} style={{ flex: 5 }} />
+                        </View>
+                    )}
+                    {page === 2 && <CustomButton title="Avaliar" onPress={() => onSubmit(true)} />}
                 </KeyboardStickyView>
             </KeyboardProvider>
             {showPicker && (

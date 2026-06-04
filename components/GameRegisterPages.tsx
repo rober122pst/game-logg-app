@@ -1,4 +1,11 @@
-import { AddUserGame, useAddUserGame } from '@/hooks/userGamesHooks';
+import {
+    AddGameEvent,
+    AddRating,
+    AddUserGame,
+    useAddBeatEvent,
+    useAddRating,
+    useAddUserGame,
+} from '@/hooks/userGamesHooks';
 import { EventAction, EventState, GameAction } from '@/reducers/gameEventReducer';
 import { GameRatingAction, GameRatingState } from '@/reducers/gameRatingReducer';
 import { GameStatus, RegisterAction, RegisterState } from '@/reducers/gameRegisterReducer';
@@ -21,7 +28,6 @@ import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { ratingColor } from '@/services/ratingColor';
 import { GameType } from '@/types';
 import { Slider } from '@miblanchard/react-native-slider';
-import { CustomButton } from './ui/CustomButton';
 import RadioInput from './ui/RadioInput';
 import { SectionTitle } from './ui/SectionTitle';
 
@@ -52,14 +58,19 @@ export function GameRegisterPageOne({ game, state, dispatch, onShowObjectivePick
 
         mutate(requestData);
 
-        console.log(requestData);
+        dispatch({ type: 'SET_USERGAME_ID', value: data?.data.id });
 
         return { data, isPending, error };
-    }, [game.id, mutate, state, data, isPending, error]);
+    }, [game.id, mutate, dispatch, state, data, isPending, error]);
 
     useEffect(() => {
         onSubmit(handlerSubmit);
     }, [handlerSubmit, onSubmit]);
+
+    useEffect(() => {
+        dispatch({ type: 'SET_OBJECTIVE', value: { id: 'BEATED', name: 'Zerar o jogo' } });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const statusOptions: statusOptionsType[] = [
         {
@@ -135,19 +146,48 @@ export function GameRegisterPageOne({ game, state, dispatch, onShowObjectivePick
 }
 
 interface PageTwoProps {
+    game: GameType;
     state: EventState;
     dispatch: React.Dispatch<EventAction>;
-    platformName: string;
+    userGameId: string | undefined;
     onShowPicker: () => void;
-    onNext: () => void;
+    onSubmit: (func: () => unknown) => void;
 }
 
-export function GameRegisterPageTwo({ state, dispatch, platformName, onShowPicker, onNext }: PageTwoProps) {
+export function GameRegisterPageTwo({ game, state, dispatch, userGameId, onShowPicker, onSubmit }: PageTwoProps) {
     type statusOptionsType = {
         type: GameAction;
         icon: React.ForwardRefExoticComponent<LucideProps & React.RefAttributes<SVGSVGElement>>;
         label: string;
     };
+
+    const { data, mutate, isPending, error } = useAddBeatEvent();
+
+    const handlerSubmit = useCallback(() => {
+        if (!userGameId) return;
+        const requestData: AddGameEvent = {
+            action: state.action,
+            precision: state.precision,
+            initialPlaytime: state.initialPlaytime ? Number(state.initialPlaytime) : undefined,
+            timeToEvent: state.timeToEvent ? Number(state.timeToEvent) : undefined,
+            platformId: state.platform.id,
+            dateInput: state.date,
+            hourInput: state.hour,
+            userGameId: userGameId,
+        };
+
+        mutate(requestData);
+
+        return { data, isPending, error };
+    }, [data, error, isPending, mutate, state, userGameId]);
+
+    useEffect(() => {
+        onSubmit(handlerSubmit);
+    }, [handlerSubmit, onSubmit]);
+
+    useEffect(() => {
+        dispatch({ type: 'SET_PLATFORM', value: { id: game.platforms[0].id, name: game.platforms[0].name } });
+    }, [dispatch, game.platforms]);
 
     const tailwindColors = useTailwindColors();
 
@@ -224,7 +264,7 @@ export function GameRegisterPageTwo({ state, dispatch, platformName, onShowPicke
                     scrollEnabled={false}
                 />
             </View>
-            <PickerSelect title="Plataforma" value={platformName} onPress={onShowPicker} />
+            <PickerSelect title="Plataforma" value={state.platform.name} onPress={onShowPicker} />
             <FormInputText label="Total de tempo jogado até agora (h)" placeholder="Ex: 87" keyboardType="numeric" />
             <Text className="mt-1.5 font-metropolis-light text-sm text-text-secondary">
                 Esse valor será registrado como tempo inicial. Você poderá editá-lo depois para colocar o tempo real
@@ -288,16 +328,15 @@ export function GameRegisterPageTwo({ state, dispatch, platformName, onShowPicke
                 Esse tempo serve para contar o tempo total de jogo até o evento. Ele é útil para calcular a média de
                 tempo gasto por mês, por exemplo. Caso você não saiba ou não queira preencher, deixe em branco.
             </Text>
-            <View className="mt-4">
-                <CustomButton title="Quero Avaliar o Jogo" variant="secondary" onPress={onNext} />
-            </View>
         </>
     );
 }
 
 interface RatingGameFormProps {
+    userGameId: string | undefined;
     state: GameRatingState;
     dispatch: React.Dispatch<GameRatingAction>;
+    onSubmit: (func: () => unknown) => void;
 }
 
 type SliderRatingProps = {
@@ -337,8 +376,33 @@ const SliderRating = ({ label, value, category, dispatch }: SliderRatingProps) =
     );
 };
 
-export function RatingGameForm({ state, dispatch }: RatingGameFormProps) {
+export function RatingGameForm({ state, dispatch, onSubmit, userGameId }: RatingGameFormProps) {
+    const { data, mutate, isPending, error } = useAddRating();
     const tailwindColors = useTailwindColors();
+
+    const handlerSubmit = useCallback(() => {
+        if (!userGameId) return;
+        const requestData: AddRating = {
+            ...state,
+            scores: {
+                graphics: state.graphics,
+                gameplay: state.gameplay,
+                sound: state.sound,
+                story: state.story,
+            },
+            userGameId: userGameId,
+        };
+
+        mutate(requestData);
+
+        console.log(requestData);
+
+        return { data, isPending, error };
+    }, [data, error, isPending, mutate, state, userGameId]);
+
+    useEffect(() => {
+        onSubmit(handlerSubmit);
+    }, [handlerSubmit, onSubmit]);
 
     return (
         <>

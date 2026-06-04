@@ -8,7 +8,7 @@ export interface GameRatingState {
     overall: number;
     favorite: boolean;
     difficulty: GameDifficulty;
-    comment: string;
+    comment?: string;
 }
 
 export type GameRatingAction =
@@ -25,7 +25,6 @@ export const initialGameRatingState: GameRatingState = {
     overall: 7,
     favorite: false,
     difficulty: 'B',
-    comment: '',
 };
 
 export function gameRatingReducer(state: GameRatingState, action: GameRatingAction): GameRatingState {

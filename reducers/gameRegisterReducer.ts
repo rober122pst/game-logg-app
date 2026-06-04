@@ -7,6 +7,7 @@ export type GameStatus = 'PLAYING' | 'I_WILL_PLAY' | 'BEAT_EVENT' | 'BEATED' | '
 export type GameObjective = GameAction;
 
 export interface RegisterState {
+    userGameId?: string;
     status: GameStatus;
     price: string;
     objective: {
@@ -24,6 +25,10 @@ export type RegisterAction =
     | {
         type: 'SET_PRICE';
         value: string;
+    }
+    | {
+        type: 'SET_USERGAME_ID';
+        value: string | undefined;
     }
     | {
         type: 'SET_OBJECTIVE';
@@ -80,6 +85,11 @@ export function reducer(state: RegisterState, action: RegisterAction): RegisterS
             return {
                 ...state,
                 objective: action.value,
+            };
+        case 'SET_USERGAME_ID':
+            return {
+                ...state,
+                userGameId: action.value,
             };
         default:
             return state;

@@ -1,5 +1,5 @@
 import { DatePrecision, GameAction } from '@/reducers/gameEventReducer';
-import { GameObjective, GameStatus } from '@/reducers/gameRegisterReducer';
+import { GameDifficulty, GameObjective, GameStatus } from '@/reducers/gameRegisterReducer';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/services/api';
@@ -38,7 +38,7 @@ export function useUserGames(params?: { gameId?: string; favorite?: boolean; sta
                 ...(params?.favorite !== undefined && { favorite: params.favorite ? 'true' : 'false' }),
                 ...(params?.status && { status: params.status }),
             });
-            const res = await api.get<UserGameType[]>(`/users/${userId}/games?${urlParams.toString()}`);
+            const res = await api.get<UserGameType[]>(`/users/me/games?${urlParams.toString()}`);
 
             return res.data;
         },
@@ -63,10 +63,37 @@ export function useAddBeatEvent() {
 
     return useMutation({
         mutationFn: async (data: AddGameEvent) => {
-            return await api.post(`/users/${userId}/games`, data);
+            return await api.post(`/users/me/games/${data.userGameId}/events`, data);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['userGames', 'gamesEvents', userId] });
+        },
+    });
+}
+
+export type AddRating = {
+    userGameId: string;
+    difficulty: GameDifficulty;
+    scores: {
+        gameplay: number;
+        graphics: number;
+        story: number;
+        sound: number;
+    };
+    comment?: string;
+    favorite: boolean;
+};
+
+export function useAddRating() {
+    const queryClient = useQueryClient();
+    const userId = useUserStore((s) => s.userId);
+
+    return useMutation({
+        mutationFn: async (data: AddRating) => {
+            return await api.post(`/users/me/games/${data.userGameId}/rating`, data);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['userGames', 'rating', userId] });
         },
     });
 }
