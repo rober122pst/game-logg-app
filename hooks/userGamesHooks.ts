@@ -22,7 +22,7 @@ export function useAddUserGame() {
             return await api.post<UserGameType>('/users/me/games', data);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['userGames', userId] });
+            queryClient.invalidateQueries({ queryKey: ['userGames', userId, 'stats'] });
         },
     });
 }
@@ -66,7 +66,7 @@ export function useAddBeatEvent() {
             return await api.post(`/users/me/games/${data.userGameId}/events`, data);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['userGames', 'gamesEvents', userId] });
+            queryClient.invalidateQueries({ queryKey: ['userGames', 'gamesEvents', userId, 'stats'] });
         },
     });
 }
@@ -93,7 +93,7 @@ export function useAddRating() {
             return await api.post(`/users/me/games/${data.userGameId}/rating`, data);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['userGames', 'rating', userId] });
+            queryClient.invalidateQueries({ queryKey: ['userGames', 'rating', userId, 'stats'] });
         },
     });
 }

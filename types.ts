@@ -1,4 +1,5 @@
-import { GameDifficulty, GameStatus } from './reducers/gameRegisterReducer';
+import { GameAction } from './reducers/gameEventReducer';
+import { GameStatus } from './reducers/gameRegisterReducer';
 
 export type RootStackParamList = {
     Login: undefined;
@@ -6,9 +7,10 @@ export type RootStackParamList = {
     ForgotPassword: undefined;
     Home: undefined;
     Search: undefined;
-    Profile: { profile: ProfileType };
+    Profile: undefined;
     Game: { igdbId: number; title: string; coverUrl: string; slug: string };
     UserGameRegister: { game: GameType };
+    Library: undefined;
 };
 
 export interface ProfileType {
@@ -21,16 +23,24 @@ export interface ProfileType {
     userId: string | null;
 }
 
+export interface RatingType {
+    id: string;
+    graphics: number;
+    gameplay: number;
+    story: number;
+    sound: number;
+    comment?: string;
+    favorite: boolean;
+}
+
 export interface UserGameType {
     id: string;
     platformIds: string[];
-    status: GameStatus;
+    status: Exclude<GameStatus, 'BEAT_EVENT'> | GameAction;
     objective: string;
-    comment: string | null;
-    favorite: boolean;
-    difficulty: GameDifficulty;
-    acquiredAt: Date | null;
     price: number | null;
+    initialPlaytime: number | null;
+    rating?: RatingType;
     gameId: string;
     userId: string;
     createdAt: Date;
@@ -58,13 +68,13 @@ export interface PlatformType {
 export interface GameType {
     id: string;
     slug: string;
+    releaseDate: string;
     title: string;
     igdbId: number;
     steamId?: string | null;
     alternativeTitles?: string[];
     platformIds?: string[];
     platforms: PlatformType[];
-    releaseDate?: Date | string | null;
     genreIds?: string[];
     coverUrl?: string | null;
     bannerUrl?: string | null;

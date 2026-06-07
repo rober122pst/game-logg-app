@@ -4,14 +4,14 @@ import { Image, ScrollView, Text, View } from 'react-native';
 import defaultAvatar from '@/assets/placeholder/avatar.jpg';
 import BaseInterface from '@/components/BaseInterface';
 import GamesHorizontalList from '@/components/GamesHorizontalList';
-import LoadingComponent from '@/components/LoadingComponent';
 import StatsSection from '@/components/StatsSection';
 import DinamicBoldText from '@/components/ui/DinamicBoldText';
 import { SectionTitle } from '@/components/ui/SectionTitle';
+import { useGetProfileData } from '@/hooks/useGetProfileData';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
-import { useUserGames } from '@/hooks/userGamesHooks';
 import { useRouteStore } from '@/store/useRouteStore';
 import { useUserStore } from '@/store/useUserStore';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect } from 'react';
 
 export default function Profile() {
@@ -22,19 +22,14 @@ export default function Profile() {
         setCurrentRoute('profile');
     }, [setCurrentRoute]);
 
-    const { data: games } = useUserGames({ favorite: true });
+    const { data, isLoading } = useGetProfileData();
 
     // useEffect(() => {
     //     console.log(error, games);
     // }, [error, games]);
 
     const tailwindColors = useTailwindColors();
-
-    if (!user) return <LoadingComponent />;
-
-    const profile = user.profile;
-
-    if (!profile) return <LoadingComponent />;
+    const profile = user?.profile;
 
     const timeline = [
         {
@@ -57,8 +52,14 @@ export default function Profile() {
         },
     ];
 
-    return (
-        <BaseInterface navbar>
+    let Render = () => <View className="flex-1"></View>;
+    if (user && profile && !isLoading && data) {
+        const ratings = data.favoriteGames.map((g) => {
+            const rating = g.rating;
+            if (!rating) return;
+            return (rating.gameplay + rating.graphics + rating.story + rating.sound) / 4 + Number(rating.favorite);
+        });
+        Render = () => (
             <ScrollView className="px-4" showsVerticalScrollIndicator={false}>
                 <View className="my-8">
                     <View className="h-48 w-full rounded-lg bg-background-surface">
@@ -81,7 +82,37 @@ export default function Profile() {
                     </View>
                 </View>
                 <StatsSection />
-                <View className="my-8">
+                <View className="my-8 overflow-hidden rounded-lg">
+                    <LinearGradient
+                        className="p-4"
+                        start={{ x: 0, y: 1 }}
+                        end={{ x: 1, y: 0 }}
+                        colors={[tailwindColors.raspberry, tailwindColors['raspberry-dark']]}
+                        locations={[0, 0.7]}
+                    >
+                        <View className="flex-row">
+                            <Text className="font-metropolis text-base uppercase text-text-primary">JOGANDO AGORA</Text>
+                            {data.playingNow.totalPlaying > 0 && (
+                                <Text className="ml-auto text-right font-metropolis-light text-base text-text-primary">
+                                    Junto de
+                                </Text>
+                            )}
+                        </View>
+                        <View className="flex-row">
+                            <Text className="font-metropolis-black text-xl text-text-primary">
+                                {data.playingNow.currentGame}
+                            </Text>
+                            {data.playingNow.totalPlaying > 0 && (
+                                <Text className="ml-auto text-right font-metropolis-semi-bold text-xl text-text-primary">
+                                    {data.playingNow.totalPlaying === 1
+                                        ? 'Mais um'
+                                        : `${data.playingNow.totalPlaying} jogos`}
+                                </Text>
+                            )}
+                        </View>
+                    </LinearGradient>
+                </View>
+                <View className="mb-8">
                     <SectionTitle Icon={Tag} variant="header">
                         Gêneros mais jogados
                     </SectionTitle>
@@ -89,34 +120,49 @@ export default function Profile() {
                         <View>
                             <View className="flex-row justify-between">
                                 <Text className="font-metropolis-semi-bold text-sm text-text-secondary">
-                                    Ação / Aventura
+                                    {data.topGenres.stats[0].genre}
                                 </Text>
-                                <Text className="font-metropolis text-sm text-text-secondary">85%</Text>
+                                <Text className="font-metropolis text-sm text-text-secondary">
+                                    {Math.round(data.topGenres.stats[0].percentage)}%
+                                </Text>
                             </View>
                             <View className="mt-0.5 h-2 w-full overflow-hidden rounded-full bg-background-surface-secondary">
-                                <View className="h-full bg-raspberry" style={{ width: '85%' }} />
+                                <View
+                                    className="h-full bg-raspberry"
+                                    style={{ width: `${Math.round(data.topGenres.stats[0].percentage)}%` }}
+                                />
                             </View>
                         </View>
                         <View>
                             <View className="flex-row justify-between">
                                 <Text className="font-metropolis-semi-bold text-sm text-text-secondary">
-                                    Ação / Aventura
+                                    {data.topGenres.stats[1].genre}
                                 </Text>
-                                <Text className="font-metropolis text-sm text-text-secondary">56%</Text>
+                                <Text className="font-metropolis text-sm text-text-secondary">
+                                    {Math.round(data.topGenres.stats[1].percentage)}%
+                                </Text>
                             </View>
                             <View className="mt-0.5 h-2 w-full overflow-hidden rounded-full bg-background-surface-secondary">
-                                <View className="h-full bg-cocoa-brown" style={{ width: '56%' }} />
+                                <View
+                                    className="h-full bg-cocoa-brown"
+                                    style={{ width: `${Math.round(data.topGenres.stats[1].percentage)}%` }}
+                                />
                             </View>
                         </View>
                         <View>
                             <View className="flex-row justify-between">
                                 <Text className="font-metropolis-semi-bold text-sm text-text-secondary">
-                                    Ação / Aventura
+                                    {data.topGenres.stats[2].genre}
                                 </Text>
-                                <Text className="font-metropolis text-sm text-text-secondary">48%</Text>
+                                <Text className="font-metropolis text-sm text-text-secondary">
+                                    {Math.round(data.topGenres.stats[2].percentage)}%
+                                </Text>
                             </View>
                             <View className="mt-0.5 h-2 w-full overflow-hidden rounded-full bg-background-surface-secondary">
-                                <View className="h-full bg-mint" style={{ width: '48%' }} />
+                                <View
+                                    className="h-full bg-mint"
+                                    style={{ width: `${Math.round(data.topGenres.stats[2].percentage)}%` }}
+                                />
                             </View>
                         </View>
                     </View>
@@ -126,7 +172,7 @@ export default function Profile() {
                         jogos favoritos
                     </SectionTitle>
                     <View>
-                        <GamesHorizontalList games={games?.map((g) => g.game)} />
+                        <GamesHorizontalList games={data.favoriteGames.map((g) => g.game)} ratings={ratings} />
                     </View>
                 </View>
                 <View className="mb-8">
@@ -149,6 +195,12 @@ export default function Profile() {
                     </View>
                 </View>
             </ScrollView>
+        );
+    }
+
+    return (
+        <BaseInterface navbar>
+            <Render />
         </BaseInterface>
     );
 }

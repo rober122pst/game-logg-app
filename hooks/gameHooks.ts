@@ -12,6 +12,16 @@ export function useGame(igdbId: number) {
     });
 }
 
+export function useGetPopularGames(take: number = 10) {
+    return useQuery({
+        queryKey: ['popular-games'],
+        queryFn: async () => {
+            const res = await api.get<{ data: GameType[] }>(`/games/popular-games?take=${take}`);
+            return res.data.data;
+        },
+    });
+}
+
 export function useGames(take: number) {
     return useQuery({
         queryKey: ['games-generical'],

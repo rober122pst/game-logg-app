@@ -30,6 +30,7 @@ export default {
       },
       colors: {
         raspberry: '#E0055D',
+        'raspberry-dark': '#a30767',
         mint: '#72B4A9',
         'cocoa-brown': '#E06B05',
         ...tailwindColors,
