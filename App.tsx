@@ -4,7 +4,7 @@ import './global.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { Routes } from '@/components/Routes';
-import { NavigationContainer } from '@react-navigation/native';
+import { LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -20,6 +20,15 @@ export default function App() {
         'Metropolis-Black': require('./assets/fonts/Metropolis/Metropolis-Black.otf'),
     });
 
+    const linking: LinkingOptions<ReactNavigation.RootParamList> = {
+        prefixes: ['gamelogg://'],
+        config: {
+            screens: {
+                AuthCallback: 'auth/callback',
+            },
+        },
+    };
+
     if (!loadedFonts) return null;
 
     return (
@@ -27,7 +36,7 @@ export default function App() {
             <StatusBar style="inverted" />
 
             <QueryClientProvider client={queryClient}>
-                <NavigationContainer>
+                <NavigationContainer linking={linking}>
                     <Routes />
                 </NavigationContainer>
             </QueryClientProvider>

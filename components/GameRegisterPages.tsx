@@ -237,9 +237,18 @@ interface PageTwoProps {
     userGameId: string | undefined;
     onShowPicker: () => void;
     onSubmit: (func: () => Promise<boolean>) => void;
+    withInitialTime?: boolean;
 }
 
-export function GameRegisterPageTwo({ game, state, dispatch, userGameId, onShowPicker, onSubmit }: PageTwoProps) {
+export function GameRegisterPageTwo({
+    game,
+    state,
+    dispatch,
+    userGameId,
+    onShowPicker,
+    onSubmit,
+    withInitialTime = true,
+}: PageTwoProps) {
     const { mutateAsync, error } = useAddBeatEvent();
     const tailwindColors = useTailwindColors();
     const [validationError, setValidationError] = useState<string | null>(null);
@@ -305,13 +314,15 @@ export function GameRegisterPageTwo({ game, state, dispatch, userGameId, onShowP
                 />
             </View>
             <PickerSelect title="Plataforma" value={state.platform.name} onPress={onShowPicker} />
-            <FormInputText
-                label="Total de tempo jogado até agora (h)"
-                placeholder="Ex: 87"
-                keyboardType="numeric"
-                value={state.initialPlaytime}
-                onChangeText={(value) => dispatch({ type: 'SET_TOTAL_PLAYTIME', value })}
-            />
+            {withInitialTime && (
+                <FormInputText
+                    label="Total de tempo jogado até agora (h)"
+                    placeholder="Ex: 87"
+                    keyboardType="numeric"
+                    value={state.initialPlaytime}
+                    onChangeText={(value) => dispatch({ type: 'SET_TOTAL_PLAYTIME', value })}
+                />
+            )}
             <Text className="mt-1.5 font-metropolis-light text-sm text-text-secondary">
                 Esse valor será registrado como tempo inicial. Você poderá editá-lo depois para colocar o tempo real
                 gasto no jogo.

@@ -59,6 +59,16 @@ export default function Profile() {
             if (!rating) return;
             return (rating.gameplay + rating.graphics + rating.story + rating.sound) / 4 + Number(rating.favorite);
         });
+
+        const topGenres = data.topGenres.stats.slice(0, 3).map((genre, index) => {
+            const colors = ['bg-raspberry', 'bg-cocoa-brown', 'bg-mint'] as const;
+            return {
+                genre: genre.genre,
+                percentage: genre.percentage,
+                color: colors[index],
+            };
+        });
+
         Render = () => (
             <ScrollView className="px-4" showsVerticalScrollIndicator={false}>
                 <View className="my-8">
@@ -112,61 +122,30 @@ export default function Profile() {
                         </View>
                     </LinearGradient>
                 </View>
-                <View className="mb-8">
-                    <SectionTitle Icon={Tag} variant="header">
-                        Gêneros mais jogados
-                    </SectionTitle>
-                    <View className="gap-4 rounded-lg border border-background-surface-secondary bg-background-surface p-6">
-                        <View>
-                            <View className="flex-row justify-between">
-                                <Text className="font-metropolis-semi-bold text-sm text-text-secondary">
-                                    {data.topGenres.stats[0].genre}
-                                </Text>
-                                <Text className="font-metropolis text-sm text-text-secondary">
-                                    {Math.round(data.topGenres.stats[0].percentage)}%
-                                </Text>
-                            </View>
-                            <View className="mt-0.5 h-2 w-full overflow-hidden rounded-full bg-background-surface-secondary">
-                                <View
-                                    className="h-full bg-raspberry"
-                                    style={{ width: `${Math.round(data.topGenres.stats[0].percentage)}%` }}
-                                />
-                            </View>
-                        </View>
-                        <View>
-                            <View className="flex-row justify-between">
-                                <Text className="font-metropolis-semi-bold text-sm text-text-secondary">
-                                    {data.topGenres.stats[1].genre}
-                                </Text>
-                                <Text className="font-metropolis text-sm text-text-secondary">
-                                    {Math.round(data.topGenres.stats[1].percentage)}%
-                                </Text>
-                            </View>
-                            <View className="mt-0.5 h-2 w-full overflow-hidden rounded-full bg-background-surface-secondary">
-                                <View
-                                    className="h-full bg-cocoa-brown"
-                                    style={{ width: `${Math.round(data.topGenres.stats[1].percentage)}%` }}
-                                />
-                            </View>
-                        </View>
-                        <View>
-                            <View className="flex-row justify-between">
-                                <Text className="font-metropolis-semi-bold text-sm text-text-secondary">
-                                    {data.topGenres.stats[2].genre}
-                                </Text>
-                                <Text className="font-metropolis text-sm text-text-secondary">
-                                    {Math.round(data.topGenres.stats[2].percentage)}%
-                                </Text>
-                            </View>
-                            <View className="mt-0.5 h-2 w-full overflow-hidden rounded-full bg-background-surface-secondary">
-                                <View
-                                    className="h-full bg-mint"
-                                    style={{ width: `${Math.round(data.topGenres.stats[2].percentage)}%` }}
-                                />
-                            </View>
+                {data.topGenres.totalTags > 0 && (
+                    <View className="mb-8">
+                        <SectionTitle Icon={Tag} variant="header">
+                            Gêneros mais jogados
+                        </SectionTitle>
+                        <View className="gap-4 rounded-lg border border-background-surface-secondary bg-background-surface p-6">
+                            {topGenres.map((g) => (
+                                <View key={g.genre}>
+                                    <View className="flex-row justify-between">
+                                        <Text className="font-metropolis-semi-bold text-sm text-text-secondary">
+                                            {g.genre}
+                                        </Text>
+                                        <Text className="font-metropolis text-sm text-text-secondary">
+                                            {g.percentage}%
+                                        </Text>
+                                    </View>
+                                    <View className="mt-0.5 h-2 w-full overflow-hidden rounded-full bg-background-surface-secondary">
+                                        <View className={'h-full' + g.color} style={{ width: `${g.percentage}%` }} />
+                                    </View>
+                                </View>
+                            ))}
                         </View>
                     </View>
-                </View>
+                )}
                 <View className="mb-8">
                     <SectionTitle Icon={Heart} variant="header">
                         jogos favoritos

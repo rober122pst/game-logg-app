@@ -1,5 +1,6 @@
 import { RootStackParamList } from '@/types';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import AuthCallbackScreen from './AuthCallbackScreen';
 import Login from './Login';
 import Register from './Register';
 
@@ -10,6 +11,7 @@ export default function AuthStack() {
         <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="Register" component={Register} />
+            <Stack.Screen name="AuthCallback" component={AuthCallbackScreen} />
         </Stack.Navigator>
     );
 }

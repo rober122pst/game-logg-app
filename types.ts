@@ -1,15 +1,18 @@
-import { GameAction } from './reducers/gameEventReducer';
+import { DatePrecision, GameAction } from './reducers/gameEventReducer';
 import { GameStatus } from './reducers/gameRegisterReducer';
 
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
+    AuthCallback: { token?: string };
     ForgotPassword: undefined;
     Home: undefined;
     Search: undefined;
     Profile: undefined;
     Game: { igdbId: number; title: string; coverUrl: string; slug: string };
     UserGameRegister: { game: GameType };
+    BeatEventRegister: { userGameId: string; game: GameType };
+    UserGameStats: { userGameId: string; gameTitle: string };
     Library: undefined;
 };
 
@@ -31,6 +34,39 @@ export interface RatingType {
     sound: number;
     comment?: string;
     favorite: boolean;
+    difficulty?: 'D' | 'C' | 'B' | 'A' | 'S' | 'SS';
+}
+
+export interface FeedCardType {
+    id: number;
+    user: string;
+    avatar: string;
+    action: string;
+    game: string;
+    time: string;
+    likes: number;
+    comments: number;
+    gameImg: string;
+    isAchievement: boolean;
+    playtime?: string;
+}
+
+export interface BeatEventType {
+    id: string;
+    action: 'BEATED' | 'COMPLETED' | 'PLATINUM' | 'PERFECT';
+    occurredAtStart: Date;
+    occurredAtEnd: Date;
+    precision: DatePrecision;
+
+    timeToEvent: number;
+
+    createdAt: Date;
+}
+
+export interface Genres {
+    id: string;
+    name: string;
+    slug: string;
 }
 
 export interface UserGameType {
@@ -41,6 +77,8 @@ export interface UserGameType {
     price: number | null;
     initialPlaytime: number | null;
     rating?: RatingType;
+    beatEvents?: BeatEventType[];
+    playedPlatforms: PLayedPlatforms[];
     gameId: string;
     userId: string;
     createdAt: Date;
@@ -53,6 +91,20 @@ export interface UserGameType {
         achievementsPercent: number;
         isPlatinum: boolean;
     } | null;
+}
+
+export interface PLayedPlatforms {
+    id: string;
+
+    platformId: string;
+    platform: PlatformType;
+    userGameIds: string;
+    userGames: UserGameType[];
+    userId: string;
+    user: UserType;
+
+    totalMinutes: number;
+    totalSessions: number;
 }
 
 export interface PlatformType {
@@ -76,6 +128,7 @@ export interface GameType {
     platformIds?: string[];
     platforms: PlatformType[];
     genreIds?: string[];
+    genres?: Genres[];
     coverUrl?: string | null;
     bannerUrl?: string | null;
     screenshots?: string[];

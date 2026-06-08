@@ -3,11 +3,19 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useMutation } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 
+interface RegisterData {
+    username: string;
+    displayName: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+}
+
 export function useRegister() {
     const setToken = useAuthStore((s) => s.setToken);
 
     return useMutation({
-        mutationFn: (data) => api.post('/auth/register', data),
+        mutationFn: (data: RegisterData) => api.post('/auth/register', data),
         onSuccess: (res) => {
             const { token } = res.data;
             setToken(token);

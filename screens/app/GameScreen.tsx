@@ -11,76 +11,33 @@ import { useGame } from '@/hooks/gameHooks';
 import { useNavigationCustom } from '@/hooks/useNavigationCustom';
 import { useUserGames } from '@/hooks/userGamesHooks';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
-import { GameAction } from '@/reducers/gameEventReducer';
-import { GameStatus } from '@/reducers/gameRegisterReducer';
 import { ratingColor } from '@/services/ratingColor';
 import { RootStackParamList } from '@/types';
-import { CheckCircle2, Gamepad, Gamepad2, HeartOff, LucideProps, Percent, Star, Trophy } from 'lucide-react-native';
+import { getStatusInfo } from '@/utils/statusMappings';
 import { useEffect, useState } from 'react';
 
 interface GameLoggsProps {
     gameId: string;
     contain: (contain: boolean) => void;
+    onUserGameId: (value: string) => void;
 }
 
-function GameLoggs({ gameId, contain }: GameLoggsProps) {
+function GameLoggs({ gameId, contain, onUserGameId }: GameLoggsProps) {
     const tailwindColors = useTailwindColors();
     const { data, isLoading, isError } = useUserGames({ gameId });
 
     useEffect(() => {
         contain(data?.[0] !== undefined);
-    }, [data, contain]);
+        if (!data?.[0]) return;
+        onUserGameId(data[0].id);
+    }, [data, contain, onUserGameId]);
 
     if (isError) return <Text className="font-metropolis text-text-secondary">Algum erro ao carregar informações</Text>;
     else if (isLoading || !data?.[0]) return;
 
     const ug = data[0];
-
-    type StatusInfo = {
-        label: string;
-        icon: React.ForwardRefExoticComponent<LucideProps & React.RefAttributes<SVGSVGElement>>;
-        color: string;
-    };
-
-    const status: Record<Exclude<GameStatus, 'BEAT_EVENT'> | GameAction, StatusInfo> = {
-        PLAYING: {
-            label: 'Jogando',
-            icon: Gamepad2,
-            color: tailwindColors.raspberry,
-        },
-        I_WILL_PLAY: {
-            label: 'Adquirido',
-            icon: Gamepad,
-            color: tailwindColors['text-primary'].dark,
-        },
-        DROPPED: {
-            label: 'Dropei',
-            icon: HeartOff,
-            color: tailwindColors['text-secondary'].dark,
-        },
-        BEATED: {
-            label: 'Zerado',
-            icon: CheckCircle2,
-            color: tailwindColors.raspberry,
-        },
-        COMPLETED: {
-            label: '100%',
-            icon: Percent,
-            color: tailwindColors.mint,
-        },
-        PLATINUM: {
-            label: 'Platinado',
-            icon: Trophy,
-            color: tailwindColors['cocoa-brown'],
-        },
-        PERFECT: {
-            label: 'Perfeito',
-            icon: Star,
-            color: tailwindColors['cocoa-brown'],
-        },
-    };
-
-    const Icon = status[ug.status].icon;
+    const statusInfo = getStatusInfo(ug.status, tailwindColors);
+    const Icon = statusInfo.icon;
     const ratingOverall = ug.rating
         ? (ug.rating.gameplay + ug.rating.graphics + ug.rating.sound + ug.rating.story) / 4 + Number(ug.rating.favorite)
         : undefined;
@@ -94,7 +51,7 @@ function GameLoggs({ gameId, contain }: GameLoggsProps) {
                 <View className="w-1/3 gap-2 border-r border-background-surface-secondary">
                     <Text className="font-metropolis-light text-xs text-text-secondary">STATUS</Text>
                     <Text className="font-metropolis-semi-bold text-text-primary">
-                        <Icon color={status[ug.status].color} size={12} /> {status[ug.status].label}
+                        <Icon color={statusInfo.color} size={12} /> {statusInfo.label}
                     </Text>
                 </View>
                 <View className="w-1/3 gap-2 border-r border-background-surface-secondary">
@@ -145,6 +102,7 @@ export default function GameScreen() {
     });
 
     const [contain, setContain] = useState(false);
+    const [userGameId, setUserGameId] = useState('');
 
     if (isLoading || !game) return <GameLoadingComponent gameParams={gameParams} />;
 
@@ -197,8 +155,8 @@ export default function GameScreen() {
                         </View>
                         {contain ? (
                             <CustomButton
-                                title="Registrar Evento"
-                                onPress={() => navigation.navigate('UserGameRegister', { game })}
+                                title="Registrar Novo Evento"
+                                onPress={() => navigation.navigate('BeatEventRegister', { userGameId, game })}
                             />
                         ) : (
                             <View className="flex-row gap-4">
@@ -211,7 +169,11 @@ export default function GameScreen() {
                                 <CustomButton title="Wishlist" variant="secondary" />
                             </View>
                         )}
-                        <GameLoggs gameId={game.id} contain={(contain) => setContain(contain)} />
+                        <GameLoggs
+                            gameId={game.id}
+                            contain={(contain) => setContain(contain)}
+                            onUserGameId={setUserGameId}
+                        />
                         <View>
                             <Text className="mb-1 font-metropolis-semi-bold text-lg uppercase tracking-widest text-text-secondary">
                                 Sobre o jogo

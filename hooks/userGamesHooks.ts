@@ -27,13 +27,14 @@ export function useAddUserGame() {
     });
 }
 
-export function useUserGames(params?: { gameId?: string; favorite?: boolean; status?: GameStatus }) {
+export function useUserGames(params?: { id?: string; gameId?: string; favorite?: boolean; status?: GameStatus }) {
     const userId = useUserStore((s) => s.userId);
 
     return useQuery({
-        queryKey: ['userGames', userId, params?.gameId, params?.favorite, params?.status],
+        queryKey: ['userGames', userId, params?.gameId, params?.favorite, params?.status, params?.id],
         queryFn: async () => {
             const urlParams = new URLSearchParams({
+                ...(params?.id && { id: params.id }),
                 ...(params?.gameId && { gameId: params.gameId }),
                 ...(params?.favorite !== undefined && { favorite: params.favorite ? 'true' : 'false' }),
                 ...(params?.status && { status: params.status }),

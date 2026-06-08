@@ -1,11 +1,6 @@
-import { GameRegisterPageOne, GameRegisterPageTwo, RatingGameForm } from '@/components/GameRegisterPages';
+import { GameRegisterPageTwo, RatingGameForm } from '@/components/GameRegisterPages';
 import { initializeState as eventInitialState, reducer as eventReducer } from '@/reducers/gameEventReducer';
 import { gameRatingReducer, initialGameRatingState } from '@/reducers/gameRatingReducer';
-import {
-    GameObjective,
-    initializeState as registerInitialState,
-    reducer as registerReducer,
-} from '@/reducers/gameRegisterReducer';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useCallback, useReducer, useRef, useState } from 'react';
 import { ActivityIndicator, LayoutChangeEvent, Pressable, Text, View } from 'react-native';
@@ -19,32 +14,23 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const objectives: { id: GameObjective; name: string }[] = [
-    { id: 'BEATED', name: 'Zerar o jogo' },
-    { id: 'COMPLETED', name: 'Fazer 100% do mundo' },
-    { id: 'PLATINUM', name: 'Platinar o jogo' },
-    { id: 'PERFECT', name: 'Fazer 100% das conquistas (DLCs inclusas)' },
-];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function EventRegisterScreen() {
-    const route = useRoute<RouteProp<RootStackParamList, 'UserGameRegister'>>();
-    const { game } = route.params;
+export default function EventFormScreen() {
+    const route = useRoute<RouteProp<RootStackParamList, 'BeatEventRegister'>>();
+    const { userGameId, game } = route.params;
 
-    const [registerForm, registerDispatch] = useReducer(registerReducer, registerInitialState);
     const [eventForm, eventDispatch] = useReducer(eventReducer, eventInitialState);
     const [ratingForm, ratingDispatch] = useReducer(gameRatingReducer, initialGameRatingState);
 
     const [page, setPage] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPicker, setShowPicker] = useState(false);
-    const [showObjectivePicker, setObjectiveShowPicker] = useState(false);
     const [footerHeight, setFooterHeight] = useState(0);
 
     const submitPageRef = useRef<() => Promise<boolean>>(() => Promise.resolve(false));
 
-    const navigation = useNavigationCustom<'UserGameRegister'>();
+    const navigation = useNavigationCustom<'BeatEventRegister'>();
 
     const handleFooterLayout = useCallback((e: LayoutChangeEvent) => {
         setFooterHeight(e.nativeEvent.layout.height);
@@ -57,7 +43,7 @@ export default function EventRegisterScreen() {
                 const success = await submitPageRef.current();
                 if (!success) return;
                 if (goBack) {
-                    navigation.goBack();
+                    navigation.navigate('UserGameStats', { userGameId, gameTitle: game.title });
                 } else {
                     setPage((prev) => prev + 1);
                 }
@@ -65,30 +51,23 @@ export default function EventRegisterScreen() {
                 setIsSubmitting(false);
             }
         },
-        [navigation]
+        [navigation, game.title, userGameId]
     );
 
     const pages = [
-        <GameRegisterPageOne
-            key="page1"
-            game={game}
-            state={registerForm}
-            dispatch={registerDispatch}
-            onShowObjectivePicker={() => setObjectiveShowPicker(true)}
-            onSubmit={(func) => (submitPageRef.current = func)}
-        />,
         <GameRegisterPageTwo
             key="page2"
             game={game}
             state={eventForm}
             dispatch={eventDispatch}
-            userGameId={registerForm.userGameId}
+            userGameId={userGameId}
             onShowPicker={() => setShowPicker(true)}
             onSubmit={(func) => (submitPageRef.current = func)}
+            withInitialTime={false}
         />,
         <RatingGameForm
             key="page3"
-            userGameId={registerForm.userGameId}
+            userGameId={userGameId}
             state={ratingForm}
             dispatch={ratingDispatch}
             onSubmit={(func) => (submitPageRef.current = func)}
@@ -119,12 +98,6 @@ export default function EventRegisterScreen() {
                     {isSubmitting ? (
                         <ActivityIndicator />
                     ) : page === 0 ? (
-                        <CustomButton
-                            title={registerForm.status !== 'BEAT_EVENT' ? 'Loggar Jogo' : 'Informações do Evento'}
-                            onPress={() => onSubmit(registerForm.status !== 'BEAT_EVENT')}
-                            variant={registerForm.status !== 'BEAT_EVENT' ? 'cta' : 'secondary'}
-                        />
-                    ) : page === 1 ? (
                         <View className="flex-row gap-4">
                             <CustomButton
                                 title="Avaliar"
@@ -135,7 +108,7 @@ export default function EventRegisterScreen() {
                             <CustomButton title="Loggar Jogo" onPress={() => onSubmit(true)} style={{ flex: 5 }} />
                         </View>
                     ) : (
-                        page === 2 && <CustomButton title="Avaliar" onPress={() => onSubmit(true)} />
+                        page === 1 && <CustomButton title="Avaliar" onPress={() => onSubmit(true)} />
                     )}
                 </KeyboardStickyView>
             </KeyboardProvider>
@@ -144,18 +117,6 @@ export default function EventRegisterScreen() {
                     items={game.platforms}
                     onSelect={(id, name) => eventDispatch({ type: 'SET_PLATFORM', value: { id, name } })}
                     onDestroy={() => setShowPicker(false)}
-                />
-            )}
-            {showObjectivePicker && (
-                <PickerScreen
-                    items={objectives}
-                    onSelect={(id, name) =>
-                        registerDispatch({
-                            type: 'SET_OBJECTIVE',
-                            value: { id: id as GameObjective, name },
-                        })
-                    }
-                    onDestroy={() => setObjectiveShowPicker(false)}
                 />
             )}
         </View>

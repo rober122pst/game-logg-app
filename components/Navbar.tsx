@@ -15,16 +15,28 @@ export function Navbar() {
 
     return (
         <View className="h-20 flex-row items-center justify-around rounded-t-2xl border-l border-r border-t border-background-surface bg-background-surface">
-            <Pressable className="flex-1 items-center" onPress={() => navigation.navigate('Home')}>
+            <Pressable
+                className="h-full flex-1 items-center justify-center"
+                onPress={() => navigation.navigate('Home')}
+            >
                 <HomeIcon color={activeRoute === 'home' ? '#E0055D' : '#D9D9D9'} />
             </Pressable>
-            <Pressable className="flex-1 items-center" onPress={() => navigation.navigate('Search')}>
+            <Pressable
+                className="h-full flex-1 items-center justify-center"
+                onPress={() => navigation.navigate('Search')}
+            >
                 <Search color={activeRoute === 'search' ? '#E0055D' : '#D9D9D9'} />
             </Pressable>
-            <Pressable className="flex-1 items-center" onPress={() => navigation.navigate('Library')}>
+            <Pressable
+                className="h-full flex-1 items-center justify-center"
+                onPress={() => navigation.navigate('Library')}
+            >
                 <LibraryBig color={activeRoute === 'library' ? '#E0055D' : '#D9D9D9'} />
             </Pressable>
-            <Pressable className="flex-1 items-center" onPress={() => navigation.navigate('Profile')}>
+            <Pressable
+                className="h-full flex-1 items-center justify-center"
+                onPress={() => navigation.navigate('Profile')}
+            >
                 <User color={activeRoute === 'profile' ? '#E0055D' : '#D9D9D9'} />
             </Pressable>
         </View>

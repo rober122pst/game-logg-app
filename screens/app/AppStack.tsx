@@ -4,12 +4,14 @@ import LoadingComponent from '@/components/LoadingComponent';
 import { useMe } from '@/hooks/userHooks';
 import { RootStackParamList } from '@/types';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import EventFormScreen from './EventFormScreen';
 import EventRegisterScreen from './EventRegisterScreen';
 import GameScreen from './GameScreen';
 import Home from './Home';
 import Library from './Library';
 import Profile from './Profile';
 import SearchScreen from './Search';
+import UserGameStatsScreen from './UserGameStatsScreen';
 
 export default function AppStack() {
     const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -27,9 +29,18 @@ export default function AppStack() {
                 component={Profile}
                 options={{ headerShown: true, header: () => <Header /> }}
             />
+            <Stack.Screen name="UserGameStats" component={UserGameStatsScreen} />
             <Stack.Screen
                 name="UserGameRegister"
                 component={EventRegisterScreen}
+                options={({ route }) => ({
+                    headerShown: true,
+                    header: () => <GameRegisterHeader gameTitle={route.params.game.title} />,
+                })}
+            />
+            <Stack.Screen
+                name="BeatEventRegister"
+                component={EventFormScreen}
                 options={({ route }) => ({
                     headerShown: true,
                     header: () => <GameRegisterHeader gameTitle={route.params.game.title} />,

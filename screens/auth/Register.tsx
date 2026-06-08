@@ -1,4 +1,4 @@
-import { Alert, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
 
 import Logo from '@/assets/logos/logo-tipo.svg';
 import BaseInterface from '@/components/BaseInterface';
@@ -6,13 +6,10 @@ import { GoogleAuthButton } from '@/components/GoogleAuthButton';
 import { SteamAuthButton } from '@/components/SteamAuthButton';
 import { CustomButton } from '@/components/ui/CustomButton';
 import InputText from '@/components/ui/InputText';
-import { RootStackParamList } from '@/types';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useRegister } from '@/hooks/authHooks';
+import { useNavigationCustom } from '@/hooks/useNavigationCustom';
 import { Checkbox } from 'expo-checkbox';
 import { useState } from 'react';
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
 
 export default function Register() {
     const [form, setForm] = useState({
@@ -30,7 +27,9 @@ export default function Register() {
         setForm((prev) => ({ ...prev, [field]: value }));
     };
 
-    const navigation = useNavigation<NavigationProp>();
+    const navigation = useNavigationCustom<'Register'>();
+
+    const { mutate, isPending, isError, error } = useRegister();
 
     const handleSubmit = () => {
         if (!firstPage) {
@@ -45,9 +44,15 @@ export default function Register() {
             }
         }
 
-        Alert.alert(`Usuário ${form.username} registrado.`, '', [
-            { text: 'Entendi', onPress: () => console.log('Alerta fechado') },
-        ]);
+        const data = {
+            username: form.username,
+            displayName: form.displayName,
+            email: form.email,
+            password: form.password,
+            confirmPassword: form.confirmPassword,
+        };
+
+        mutate(data);
     };
 
     return (
@@ -120,7 +125,16 @@ export default function Register() {
                             </>
                         )}
                         <View style={{ marginBottom: 16 }}>
-                            <CustomButton title="Criar conta" variant="cta" onPress={handleSubmit} />
+                            {isPending ? (
+                                <ActivityIndicator />
+                            ) : (
+                                <CustomButton title="Criar conta" variant="cta" onPress={handleSubmit} />
+                            )}
+                            {isError && (
+                                <Text className="text-sm text-red-600">
+                                    {error.name}, {error.message}
+                                </Text>
+                            )}
                         </View>
                         <SteamAuthButton />
                         <GoogleAuthButton />

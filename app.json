@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "my-expo-app",
-    "slug": "my-expo-app",
+    "name": "Game LoGG",
+    "slug": "gamelogg",
     "version": "1.0.0",
     "web": {
       "favicon": "./assets/favicon.png",
@@ -10,14 +10,15 @@
     "experiments": {
       "tsconfigPaths": true
     },
+    "scheme": "gamelogg",
     "plugins": [],
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/logos/GameLoggIcon.png",
+    "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/logos/GameLoggComNome.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0e0f17"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -28,9 +29,11 @@
     "android": {
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "foregroundImage": "./assets/logos/adaptive-icon.png",
+        "monochromeImage": "./assets/logos/monochrome-icon.png",
+        "backgroundColor": "#0e0f17"
+      },
+      "package": "com.equipiada.gamelogg"
     }
   }
 }
